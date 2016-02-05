@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'styles.css' %}" >
+<script src="{% static 'js/firstpick/new_event.js' %}"></script>
+
+<!-- for datepicker -->
+<link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<script src="//code.jquery.com/jquery-1.10.2.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+<!-- for timepicker -->
+<link rel="stylesheet" href="{% static 'jquery.timepicker.css' %}" >
+<script src="{% static 'jquery.timepicker.min.js' %}"></script>
+
+<!-- for slider
+<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script> -->
+
+	<div id = "create_box">
+		<h3> Create a new game </h3>
+	 	<div class = "new_event_input hide" id = "organizer"> {{user.pk}} </div>
+		<input class = "new_event_input" id = "name" placeholder = "Name your game"> 
+		<select class = "new_event_input" id = "sport">
+			<option disabled selected value = "Select sport"> Select sport</option>
+			{% for sport in sports %}
+				<option value = "{{sport}}"> {{sport}} </option>
+			{% endfor %}
+		</select>
+		<input class = "new_event_input" type="text" id="date" placeholder = "Date">
+	 	<script> 
+	 		//https://jqueryui.com/datepicker/
+	 		$(function() { $( "#date" ).datepicker({ minDate: 0 })}); 
+		</script>
+		
+		<input class = "new_event_input" type="text" id="time" placeholder = "Time">
+	 	<script> 
+	 		//http://jonthornton.github.io/jquery-timepicker/
+	 		$(function() { $( "#time" ).timepicker({ 'step': 15 , 'scrollDefault': 'now' }); }); 
+		</script>
+
+		<input class = "new_event_input" id = "location_name" placeholder = "Location Name"> 
+		<div class = "new_event_input hide" id = "lat"> NONE </div>
+		<div class = "new_event_input hide" id = "lng"> NONE </div>
+	    <input id="pac-input" class="new_event_input" type="text" placeholder="Address">
+		 <div class = "settings_map">
+	        <div id="map"></div>
+	        <script>
+
+	          // Note: This example requires that you consent to location sharing when
+	          // prompted by your browser. If you see the error "The Geolocation service
+	          // failed.", it means you probably did not give permission for the browser to
+	          // locate you.
+
+	          // Try HTML5 geolocation.
+	          var pos = {lat: -34, lng: 150};
+
+	          function initMap() {
+	            var pos = {};
+	            navigator.geolocation.getCurrentPosition(function(position) {
+	              pos = {
+	                lat: position.coords.latitude,
+	                lng: position.coords.longitude
+	              };
+	            });
+
+	            var map = new google.maps.Map(document.getElementById('map'), {
+	              center: pos,
+	              zoom: 12,
+	              mapTypeControl:false,  
+	            });
+	           
+
+
+	          if (navigator.geolocation) {
+	            navigator.geolocation.getCurrentPosition(function(position) {
+	              pos = {
+	                lat: position.coords.latitude,
+	                lng: position.coords.longitude,
+	              };
+	              //infoWindow.setPosition(pos);
+	              //infoWindow.setContent('Location found.');
+	              map.setCenter(pos);
+	            }, function() {
+	              var infoWindow = new google.maps.InfoWindow({map: map});
+	              handleLocationError(true, infoWindow, map.getCenter());
+	            });
+	          } else {
+	            // Browser doesn't support Geolocation
+	            var infoWindow = new google.maps.InfoWindow({map: map});
+	            handleLocationError(false, infoWindow, map.getCenter());
+	          }
+
+	          function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+	            infoWindow.setPosition(pos);
+	            infoWindow.setContent(browserHasGeolocation ?
+	              'Error: The Geolocation service failed.' :
+	              'Error: Your browser doesn\'t support geolocation.');
+	          }
+	          
+	            // Create the search box and link it to the UI element.
+	            var input = document.getElementById('pac-input');
+	            var searchBox = new google.maps.places.SearchBox(input);
+	            //map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+	            // Bias the SearchBox results towards current map's viewport.
+	            map.addListener('bounds_changed', function() {
+	              searchBox.setBounds(map.getBounds());
+	            });
+
+	            var markers = [];
+	            // Listen for the event fired when the user selects a prediction and retrieve
+	            // more details for that place.
+	            searchBox.addListener('places_changed', function() {
+	              var places = searchBox.getPlaces();
+
+	              if (places.length == 0) {
+	                return;
+	              }
+
+	              // Clear out the old markers.
+	              markers.forEach(function(marker) {
+	                marker.setMap(null);
+	              });
+	              markers = [];
+
+	              // For each place, get the icon, name and location.
+	              var bounds = new google.maps.LatLngBounds();
+	              places.forEach(function(place) {
+	                var icon = {
+	                  url: place.icon,
+	                  size: new google.maps.Size(71, 71),
+	                  origin: new google.maps.Point(0, 0),
+	                  anchor: new google.maps.Point(17, 34),
+	                  scaledSize: new google.maps.Size(25, 25)
+	                };
+
+	                // Create a marker for each place.
+	                markers.push(new google.maps.Marker({
+	                  map: map,
+	                  icon: icon,
+	                  title: place.name,
+	                  position: place.geometry.location,
+	                  draggable:true,
+	                }));
+
+	                $("#lat").text(place.geometry.location.lat());
+	                $("#lng").text(place.geometry.location.lng());
+
+	                if (place.geometry.viewport) {
+	                  // Only geocodes have viewport.
+	                  bounds.union(place.geometry.viewport);
+	                } else {
+	                  bounds.extend(place.geometry.location);
+	                }
+	              });
+
+	              //console.log(places.length);
+	              map.fitBounds(bounds);
+	              //var pt = new google.maps.LatLng(lat, lng);
+	              //map.setCenter(pt);
+	              map.setZoom(12);
+	            });
+
+	          }
+	        </script>
+	        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{googlekey}}&libraries=places&callback=initMap"></script>
+	    </div>
+
+		<select class = "new_event_input" id = "gender"> 
+			<option disabled selected> Gender preference? </option>
+			<option value = 'No preference'> No preference </option>
+			<option value = 'Male only'> Male only </option>
+			<option value = 'Female only'> Female only </option>
+		</select>
+
+	    <p> Skill Level (1-5 stars) </p>
+	    <p> Min: <span id = "rating_min"> 1 </span> <input type="range" class = "slider" id="rating_min_slider" value="1" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
+	    <p> Max: <span id = "rating_max"> 5 </span> <input type="range" class = "slider" id="rating_max_slider" value="5" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
+		<datalist id="steplist">
+		    <option>1</option>
+		    <option>2</option>
+		    <option>3</option>
+		    <option>4</option>
+		    <option>5</option>
+		</datalist>
+		<p class = "settings_error hide" id = "slider_error"> Max  must be greater than min </p>
+	    <select class = "new_event_input" id = "players_needed"> 
+			<option disabled selected> Players needed </option>
+			<option value = '1'> 1 player </option>
+			<option value = '2'> 2 players </option>
+			<option value = '3'> 3 players </option>
+			<option value = '4'> 4 players </option>
+			<option value = '5'> 5 players </option>
+			<option value = '6'> 6 players </option>
+			<option value = '7'> 7 players </option>
+			<option value = '8'> 8 players </option>
+			<option value = '9'> 9 players </option>
+			<option value = '10'> 10 players </option>
+			<option value = '11'> 11 players </option>
+			<option value = '12'> 12 players </option>
+		</select> 
+		<p class = "settings_error hide" id = "submit_error"> </p>
+		<div class = "settings_btns">
+	    	<div class = 'btn btn-info' id = 'submit'> Create game </div>
+	  	</div>
+  	</div>
+
+  	<div class = "hide" id = "event_created">
+  		<p class = "hide" id = "no_invites_sent_msg"> Oh no! We couldn't find anybody who matched your criteria - try expanding your player criteria. For example, lower your minimum player rating, raise your max rating, or make your game co-ed </p>
+  		<p class = "hide" id = "invites_sent_msg"> Your game's been created - we sent invites to <span id = "invites_sent"> </span> <span id = "invites_sent_pluralize"> </span> and we'll let you know each time someone accepts </p>
+  		<div class = "settings_btns">
+	    	<a class = 'btn btn-info' id = 'home' href = "/firstpick/"> Home </a>
+	    	<div class = 'btn btn-info' id = 'create_another'> Create another game </div>
+	  	</div>
+
+  	</div>
+{% endblock %}
