@@ -1,0 +1,11 @@
+<p>Hi {{event.organizer.first_name}},</p>
+
+<p>{{user.first_name}} rsvp'd yes to your {{event.sport.name | lower }} game at {{event.location_name}} at {{event.start}} </p>
+
+{% if event.players_needed > 0 %}
+<p>Look's like you still have {{event.players_needed}} open spots in your game - we're working to find you players. We'll let you know as soon as we find you another player.</p>
+{% else %}
+<p>Look's like you've found all the players you requested - have fun out there!</p>
+{% endif %}
+
+<p> - Team Firstpick </p> 

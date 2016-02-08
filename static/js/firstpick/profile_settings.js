@@ -5,6 +5,7 @@ $(document).ready(function(){
 
 	$("#settings_page-1").css("max-height","0px");
 
+	// EXPAND MAP TO BECOME VISIBLE; MAP NEEDS TO BE SHOWN TO LOAD PROPERLY
 	$("#next-0").click(function(){
 		$("#settings_page-1").css("max-height","100%");
 	});

@@ -15,7 +15,7 @@ class SportAdmin(admin.ModelAdmin):
 	list_display =('name',)
 
 class EventAdmin(admin.ModelAdmin):
-	list_display =('id','organizer','sport','start','location_name','location_lat','location_lng','gender','rating_min','rating_max','players_needed','status')
+	list_display =('id','organizer','name','sport','start','location_name','location_lat','location_lng','gender','rating_min','rating_max','players_needed','status')
 	list_filter = ('sport', 'organizer')
 	filter_horizontal = ('players','invitees')
 
@@ -24,7 +24,12 @@ class SportProfileAdmin(admin.ModelAdmin):
 	list_display = ('user', 'id', 'sport','radius','rating_count','rating_avg','active')
 	list_filter = ('sport','user','active')
 
+class MsgAdmin(admin.ModelAdmin):
+	list_display = ('sender','recipient','datetime','msg_type','subject')
+	list_filter = ('msg_type','sender','recipient')
+
 admin.site.register(UserProfile,UserProfileAdmin)
 admin.site.register(Sport,SportAdmin)
 admin.site.register(Event,EventAdmin)
 admin.site.register(SportProfile,SportProfileAdmin)
+admin.site.register(Msg,MsgAdmin)

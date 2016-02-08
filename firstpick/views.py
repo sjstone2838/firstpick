@@ -5,18 +5,23 @@ from django.db.models import Avg
 from django.template.context import RequestContext
 from django.template.context_processors import csrf
 from django.contrib.auth import authenticate,login, logout
-
 from django.http import HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-import datetime
 from datetime import timedelta, date
 from django.utils import timezone
 from geopy.distance import vincenty
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+
+import datetime
+import string
+import random
 import json
 import re
+
 from firstpick.models import *
 
 user = {}
@@ -31,12 +36,55 @@ def index(request):
 	#if UserProfile exists:
 	try:
 		user, userProfile = get_user_perms(request)
+		upcoming_events_player = Event.objects.filter(
+			status = "upcoming", 
+			players = user,
+		)
+		upcoming_events_invitee = Event.objects.filter(
+			status = "upcoming", 
+			invitees = user,
+		)
+		upcoming_events_organizer = Event.objects.filter(
+			status = "upcoming", 
+			organizer = user,
+		)
+
+		upcoming_events =  upcoming_events_invitee | upcoming_events_player | upcoming_events_organizer
+		# CAN THIS FUNCTION BE CONDENSED DOWN INTO ONE LINE? 
+		# NEED TO AVOID ADDING NULL SETS ONTO upcoming_events
+		"""
+		if upcoming_events_player.count() != 0:
+			upcoming_events = upcoming_events_player
+			if upcoming_events_invitee.count() != 0:
+				upcoming_events = upcoming_events | upcoming_events_invitee
+				if upcoming_events_organizer.count() != 0:
+					upcoming_events = upcoming_events | upcoming_events_organizer
+		else:
+			if upcoming_events_invitee.count() != 0:
+				upcoming_events = upcoming_events_invitee
+				if upcoming_events_organizer.count() != 0:
+					upcoming_events = upcoming_events | upcoming_events_organizer
+			else:
+				if upcoming_events_organizer.count() != 0:
+					upcoming_events = upcoming_events_organizer
+		"""
+		
+		upcoming_events = upcoming_events.order_by('start')
+		for e in upcoming_events:
+			if e.organizer == user:
+				# TODO: ADD IN LINK TO EVENT PAGE
+				e.relation = "You're the organizer: <a ='#'> Make changes </a>"
+			elif e.players.filter(pk = user.pk).count() == 1:
+				e.relation = "You're playing: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Change </a>"
+			else: 
+				e.relation = "Invite pending: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Respond </a>"
+	
 	except:
 		return redirect('/firstpick/profile_settings', request = request)
-	
 	return render_to_response('firstpick/index.html', {
 		'user': user,
-		'googlekey': settings.GOOGLE_API_KEY,	
+		'googlekey': settings.GOOGLE_API_KEY,
+		'upcoming_events': upcoming_events,
 	})
 
 def profile_settings(request):
@@ -167,7 +215,9 @@ def create_event(request):
 	for sp in sps:
 		ptInvitee = sp.user
 		ptInviteeProfile = UserProfile.objects.get(user = ptInvitee)
-		
+		# Don't invite the organizer
+		if e.organizer == ptInvitee:
+			continue
 		if e.gender == "Male only" and ptInviteeProfile.gender == "Female":
 			continue
 		if e.gender == "Female only" and ptInviteeProfile.gender == "Male":
@@ -184,15 +234,151 @@ def create_event(request):
 
 	# ADD USERS TO EVENT.INVITEES AND SEND INVITES TO USERS
 	for invitee in invitees:
-		print "Hi " + invitee.first_name + ", You're invited to play " + e.sport.name + " on " + str(e.start)
-		
-
-
-
+		subject = "Firstpick: new " + e.sport.name.lower() + " game"
+		email_data = {
+			'invitee' : invitee,
+			'e' : e,
+		}
+		body = render_to_string('firstpick/emails/invite.html', email_data)
+		send_mail(subject, body, 'invites@deepdive.us ', [invitee.email], fail_silently=False, html_message = body)
+		Msg.objects.create(
+			sender  = e.organizer, 
+			recipient = invitee, 
+			subject = subject, 
+			body = body, 
+			datetime = datetime.datetime.now(),
+			msg_type = "New Event",
+		)
 		e.invitees.add(invitee)
 		e.save()
 
 	invites_sent = len(invitees)
 	return JsonResponse({'invites_sent': invites_sent })
+
+def check_user_is_invitee(event,user):
+	if event.invitees.filter(pk = user.pk).count() == 1:
+		return True
+	else:
+		return False
+
+def check_user_is_player(event,user):
+	if event.players.filter(pk = user.pk).count() == 1:
+		return True
+	else:
+		return False
+
+def rsvp(request):
+	user = event = error_msg = {}
+	try: 
+		user = User.objects.get(pk = userpk)
+		event = Event.objects.get(pk = eventpk)
+	except:
+		error_msg = "Something went wrong [UNABLE TO LOCATE USER OR EVENT]"
+		return render_to_response('firstpick/rsvp.html', {'error_msg': error_msg})
+
+	if check_user_is_invitee(event,user) or check_user_is_player(event,user):
+		user = User.objects.get(pk = request.GET['userpk'])
+		event = Event.objects.get(pk = request.GET['eventpk'])
+	elif event.organizer == user:
+		error_msg = "You appear to be the organizer of this event. If you would like to change the event, please use the 'Change event' button on your home screen"
+	else:
+		error_msg = "Sorry - it appears you do not have access to this event"
+
+	return render_to_response('firstpick/rsvp.html', {
+		'user': user,
+		'event': event,
+		'error_msg': error_msg,
+	})
+
+def check_user_event_perms(event,user):
+	try: 
+		if check_user_is_player(event,user) == False:
+			if check_user_is_invitee(event,user):
+				if event.players_needed > 0:
+					return True 
+				else:
+					return "Sorry - this game already filled up"
+			else:
+				return "Sorry - looks like this game is not open to you"
+		else:
+			return "You already rsvp'd yes to this event"
+			
+	except:
+		status = "Something went wrong - please try again"
+
+def create_and_send_mail(sender,recipient,subject,email_data,email_template,msg_type):
+	body = render_to_string(email_template, email_data)
+	send_mail(subject, body, 'invites@deepdive.us ', [recipient.email], fail_silently=False, html_message = body)
+	Msg.objects.create(
+		sender  = sender, 
+		recipient = recipient, 
+		subject = subject, 
+		body = body, 
+		datetime = datetime.datetime.now(),
+		msg_type = msg_type,
+	)
+
+def handle_rsvp(request):
+	eventpk = request.POST['vars[eventpk]']
+	userpk = request.POST['vars[userpk]']
+	rsvp = request.POST['rsvp']
+	status = user = event = {}
+
+	try: 
+		user = User.objects.get(pk = userpk)
+		event = Event.objects.get(pk = eventpk)
+	except:
+		status = "Something went wrong [UNABLE TO LOCATE USER OR EVENT]"
+		return JsonResponse({'status': status })
+	
+	if rsvp == "yes":
+		if check_user_event_perms(event,user):
+			event.players.add(user)
+			event.invitees.remove(user)
+			event.players_needed -= 1
+			event.save()
+			status = "Great! See you at " + event.location_name + " on " + event.start.strftime('%H:%M%p on %b %d, %Y')
+			# SEND CONFIRMATION EMAIL TO ORGANIZER
+			subject = "Firstpick: " + user.first_name + " rsvp'd yes to your game"
+			email_data = {
+				'user' : user,
+				'event' : event,
+			}
+			create_and_send_mail(user,event.organizer,subject,email_data,'firstpick/emails/rsvp_yes.html','RSVP Yes')
+		else: 
+			status = check_user_event_perms(event, user)
+		
+	else:
+		try: 
+			if check_user_is_invitee(event,user):
+				event.invitees.remove(user)
+				event.save()
+				status = "Got it - thanks for your response"
+			elif check_user_is_player(event,user):
+				event.players.remove(user)
+				event.players_needed += 1	
+				event.save()		
+				status = "Got it - we'll let " + str(event.organizer.first_name) + " know you can't make it"
+				# TODO: SEND EMAIL TO ORGANIZER
+				subject = "Firstpick: " + user.first_name + " can't make it to your game"
+				email_data = {
+					'user' : user,
+					'event' : event,
+				}
+				create_and_send_mail(user,event.organizer,subject,email_data,'firstpick/emails/rsvp_no.html','RSVP No')	
+			else:
+				status = "Got it [ERROR]"
+		except:
+			status = "Got it [ERROR]"
+	return JsonResponse({'status': status })
+
+def messages(request):
+	user, userProfile = get_user_perms(request)
+	messages = Msg.objects.filter(recipient = user).order_by('-datetime')
+
+	return render_to_response('firstpick/messages.html', {
+		'user': user,
+		'messages': messages,
+	})
 
 

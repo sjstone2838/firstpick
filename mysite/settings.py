@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
@@ -123,6 +123,9 @@ USE_L10N = True
 
 USE_TZ = True
 
+# Allow all host headers
+ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = ['.herokuapp.com']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
@@ -137,12 +140,32 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
+# List of finder classes that know how to find static files in
+# various locations.
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.DefaultStorageFinder',
+)
+
 # http://www.sarahhagstrom.com/2013/09/the-missing-django-allauth-tutorial/
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
     # `allauth` specific authentication methods, such as login by e-mail
     "allauth.account.auth_backends.AuthenticationBackend"
+)
+
+TEMPLATE_DIRS= [os.path.join(BASE_DIR, 'templates')]
+
+#added to get user info to show up in template views?
+TEMPLATE_CONTEXT_PROCESSORS = (
+    'django.contrib.auth.context_processors.auth',
+    'django.core.context_processors.request',
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -167,5 +190,12 @@ SOCIAL_AUTH_FACEBOOK_KEY = '1705025099721326'
 SOCIAL_AUTH_FACEBOOK_SECRET = '0f89eeb4ed63dbabde57259463f613ee'
 
 GOOGLE_API_KEY = 'AIzaSyAIcEnWVLbljifvbMB3RYjo9uSqRuM387w'
+
+EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.privateemail.com'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = 'invites@deepdive.us'
+EMAIL_HOST_PASSWORD = ']bebickheEF8]'
+EMAIL_USE_TLS = False
 
 

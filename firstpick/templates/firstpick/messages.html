@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'styles.css' %}" >
+<script src="{% static 'js/firstpick/messages.js' %}"></script>
+
+
+{% for msg in messages %}
+<div class = "msg_header clickable">
+	<p> <strong> From: {{msg.sender}} </strong></p>
+	<p> Sent: {{msg.datetime}} </p>
+	<p> Subject: {{msg.subject}} </p>
+	<div class = "msg_body hide"> {{msg.body | safe | escape }} </div>
+</div>
+{% endfor %}
+  
+{% endblock %}

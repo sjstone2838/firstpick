@@ -95,3 +95,23 @@ class Event(models.Model):
 	def __unicode__(self):
 		return str(self.name)
 
+MSG_CHOICES = (
+	('New Event', 'New Event'),
+	('RSVP Yes','RSVP Yes'),
+	('RSVP No','RSVP No'),
+	('Event Changed','Event Changed'),
+	('Event Cancelled','Event Cancelled'),
+)
+
+class Msg(models.Model):
+	sender = models.ForeignKey(User, related_name = "Sender")
+	recipient = models.ForeignKey(User, related_name = "Recipient")
+	datetime = models.DateTimeField('Sent at')
+	subject = models.TextField(default="No Subject")
+	body = models.TextField(default="No Body")
+	msg_type = models.CharField(max_length=200, choices=MSG_CHOICES)
+	
+	def __unicode__(self):
+		return str(self.sender) + " to" + str(self.recipient) + " re: " + str(self.subject)
+
+

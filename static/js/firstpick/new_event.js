@@ -8,14 +8,19 @@ $(document).ready(function(){
 			$("#slider_error").addClass("hide");
 		}
 	});
+	
+	$("#map_box").css("max-height","0px");
+
+	// EXPAND MAP TO BECOME VISIBLE; MAP NEEDS TO BE SHOWN TO LOAD PROPERLY
+	$("#pac-input").focus(function(){
+		$("#map_box").css("max-height","100%");
+	});
 
 	$("#pac-input").focusout(function(){
-		$(".settings_map").addClass("hide")
+		$("#map_box").css("max-height","0px");
 	});
 
-	$("#pac-input").focus(function(){
-		$(".settings_map").removeClass("hide")
-	});
+	
 
 	$('#submit').click(function(){
 		$("#event_created").addClass("hide");

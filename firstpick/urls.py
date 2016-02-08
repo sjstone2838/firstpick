@@ -10,4 +10,7 @@ urlpatterns = patterns('firstpick.views',
 	(r'^save_profile/$','save_profile'),
 	(r'^new_event/$','new_event'),
 	(r'^create_event/$','create_event'),
+	(r'^rsvp/$','rsvp'),
+	(r'^handle_rsvp/$','handle_rsvp'),
+	(r'^messages/$','messages'),
 )
