@@ -19,7 +19,6 @@ $(document).ready(function(){
 	$("#pac-input").focusout(function(){
 		$("#map_box").css("max-height","0px");
 	});
-
 	
 
 	$('#submit').click(function(){
@@ -55,11 +54,12 @@ $(document).ready(function(){
 		        	'date': $("#date").val(),
 		        	'time': $("#time").val(),
 		        	'location_name': $("#location_name").val(),
+		        	'address': $("#pac-input").val(),
 		        	'gender': $("#gender").val(),
 		        	'lat': $("#lat").html(),
 		        	'lng': $("#lng").html(),
-		        	'rating_min': $("#rating_min").html(),
-		        	'rating_max': $("#rating_max").html(),
+		        	'rating_min': $("#slider-range").slider("values",0),
+		        	'rating_max': $("#slider-range").slider("values",1),
 		        	'players_needed': $("#players_needed").val(),
 		        },
 		        success: function(response) {

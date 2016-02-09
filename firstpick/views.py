@@ -49,10 +49,9 @@ def index(request):
 			organizer = user,
 		)
 
-		upcoming_events =  upcoming_events_invitee | upcoming_events_player | upcoming_events_organizer
 		# CAN THIS FUNCTION BE CONDENSED DOWN INTO ONE LINE? 
 		# NEED TO AVOID ADDING NULL SETS ONTO upcoming_events
-		"""
+		#upcoming_events =  upcoming_events_invitee | upcoming_events_player | upcoming_events_organizer
 		if upcoming_events_player.count() != 0:
 			upcoming_events = upcoming_events_player
 			if upcoming_events_invitee.count() != 0:
@@ -68,12 +67,13 @@ def index(request):
 				if upcoming_events_organizer.count() != 0:
 					upcoming_events = upcoming_events_organizer
 		"""
+		"""
 		
 		upcoming_events = upcoming_events.order_by('start')
 		for e in upcoming_events:
 			if e.organizer == user:
 				# TODO: ADD IN LINK TO EVENT PAGE
-				e.relation = "You're the organizer: <a ='#'> Make changes </a>"
+				e.relation = "You're the organizer: <a href ='/firstpick/edit_event?eventpk=" + str(e.pk) +"'> Make changes </a>"
 			elif e.players.filter(pk = user.pk).count() == 1:
 				e.relation = "You're playing: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Change </a>"
 			else: 
@@ -165,7 +165,41 @@ def save_profile(request):
 def new_event(request):
 	user, userProfile = get_user_perms(request)
 
-	return render_to_response('firstpick/new_event.html', {
+	return render_to_response('firstpick/event.html', {
+		'user': user,
+		'userProfile': userProfile,	
+		'sports': Sport.objects.all(),
+		'googlekey': settings.GOOGLE_API_KEY,
+	})
+
+def edit_event(request):
+	error_msg = None
+	user = userProfile = event = {}
+
+	try:
+		user, userProfile = get_user_perms(request)
+		event = Event.objects.get(pk = request.GET['eventpk'])
+		event.date = str('%02d' % event.start.month) + "/" + str('%02d' % event.start.day) + "/" + str(event.start.year)
+		event.time = str(event.start.hour) + ":" + str('%02d' % event.start.minute)
+
+		# check that user is event organizer
+		if event.organizer != user:
+			error_msg = "Sorry - you do not appear to be the organizer of this event"
+		else:
+			# check that event is upcoming / has not been cancelled or completed
+			if event.status == "completed":
+				error_msg = "Sorry - this event appears to have already occured"
+			else:
+				if event.status == "cancelled":
+					error_msg = "Sorry - this event appears to have been cancelled"
+
+
+	except:
+		error_msg = "Sorry - we're unable to find that event and/or user"
+
+	return render_to_response('firstpick/event.html', {
+		'error_msg': error_msg,
+		'event': event,
 		'user': user,
 		'userProfile': userProfile,	
 		'sports': Sport.objects.all(),
@@ -191,8 +225,9 @@ def create_event(request):
 		name = request.POST['name'],
 		sport = Sport.objects.get(name = request.POST['sport']),
 		location_name = request.POST['location_name'],
-		location_lat = float(request.POST['lat']),
-		location_lng = float(request.POST['lng']),
+		address = request.POST['address'],
+		lat = float(request.POST['lat']),
+		lng = float(request.POST['lng']),
 		gender = request.POST['gender'],
 		rating_min = float(request.POST['rating_min']),
 		rating_max = float(request.POST['rating_max']),
@@ -225,7 +260,7 @@ def create_event(request):
 		# CALC VINCENTY DISTANCE IN MILES OF POTENTIAL INVITEE AND EVENT
 		# https://pypi.python.org/pypi/geopy
 		home_loc = (ptInviteeProfile.home_lat, ptInviteeProfile.home_lng)
-		event_loc = (e.location_lat, e.location_lng)
+		event_loc = (e.lat, e.lng)
 		dist = (vincenty(home_loc, event_loc).miles)
 		if dist > sp.radius:
 			continue

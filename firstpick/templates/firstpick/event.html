@@ -19,32 +19,81 @@
 <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script> -->
 
+	{% if error_msg %}
+		{{error_msg}}
+	{% else %}
 	<div id = "create_box">
-		<h3> Create a new game </h3>
+		
+		{% if event %} 
+			<h3 class = "center"> Make changes to your game </h3>
+		{% else %}
+			<h3 class = "center"> Create a new game </h3>
+		{% endif %}
+
 	 	<div class = "new_event_input hide" id = "organizer"> {{user.pk}} </div>
-		<input class = "new_event_input" id = "name" placeholder = "Name your game"> 
+
+		{% if event %} 
+			<input class = "new_event_input" id = "name" value = "{{event.name}}"> 
+		{% else %}
+			<input class = "new_event_input" id = "name" placeholder = "Name your game"> 
+		{% endif %}
+
+		{% if event %} 
+			<select class = "form-control new_event_input" id = "sport" value = "{{event.sport}}">
+			<option disabled value = "Select sport"> Select sport</option>
+				{% for sport in sports %}
+					<option value = "{{sport}}"> {{sport}} </option>
+				{% endfor %}
+			</select>
+		{% else %}
 		<select class = "form-control new_event_input" id = "sport">
-			<option disabled selected value = "Select sport"> Select sport</option>
-			{% for sport in sports %}
-				<option value = "{{sport}}"> {{sport}} </option>
-			{% endfor %}
-		</select>
+				<option disabled selected value = "Select sport"> Select sport</option>
+				{% for sport in sports %}
+					<option value = "{{sport}}"> {{sport}} </option>
+				{% endfor %}
+			</select>
+		{% endif %}
+
+		{% if event %}
+		<input class = "new_event_input" type="text" id="date" value ="{{event.date}}">
+		{% else %}
 		<input class = "new_event_input" type="text" id="date" placeholder = "Date">
+		{% endif %}
 	 	<script> 
 	 		//https://jqueryui.com/datepicker/
 	 		$(function() { $( "#date" ).datepicker({ minDate: 0 })}); 
 		</script>
 		
+		{% if event %}
+		<input class = "new_event_input" type="text" id="time" value = "{{event.time}}">
+		{% else %}
 		<input class = "new_event_input" type="text" id="time" placeholder = "Time">
+		{% endif %}
 	 	<script> 
 	 		//http://jonthornton.github.io/jquery-timepicker/
 	 		$(function() { $( "#time" ).timepicker({ 'step': 15 , 'scrollDefault': 'now' }); }); 
 		</script>
 
+		{% if event %}
+		<input class = "new_event_input" id = "location_name" value = "{{event.location_name}}"> 
+		{% else %}
 		<input class = "new_event_input" id = "location_name" placeholder = "Location Name"> 
-		<div class = "new_event_input hide" id = "lat"> NONE </div>
-		<div class = "new_event_input hide" id = "lng"> NONE </div>
+		{% endif %}
+
+		{% if event %}
+		<div class = "new_event_input" id = "lat"> {{event.location_lat}} </div>
+		<div class = "new_event_input" id = "lng"> {{event.location_lng}} </div>
+		{% else %}
+		<div class = "new_event_input" id = "lat"> NONE </div>
+		<div class = "new_event_input" id = "lng"> NONE </div>
+		{% endif %}
+
+		{% if event %}
+	    <input id="pac-input" class="new_event_input" type="text" value = "{{event.address}}">
+		{% else %}
 	    <input id="pac-input" class="new_event_input" type="text" placeholder="Address">
+		{% endif %}
+
 		<div id = "map_box" style = "overflow: hidden;">
 			<div class = "settings_map">
 		        <div id="map"></div>
@@ -170,25 +219,71 @@
 		        <script async defer src="https://maps.googleapis.com/maps/api/js?key={{googlekey}}&libraries=places&callback=initMap"></script>
 		    </div>
 		</div>
-
+		
+		{% if event %}
+		<select class = "form-control new_event_input" id = "gender" value = "{{event.gender}}"> 
+			<option disabled > Gender preference? </option>
+			<option value = 'No preference'> No preference </option>
+			<option value = 'Male only'> Male only </option>
+			<option value = 'Female only'> Female only </option>
+		</select>
+		{% else %}
 		<select class = "form-control new_event_input" id = "gender"> 
 			<option disabled selected> Gender preference? </option>
 			<option value = 'No preference'> No preference </option>
 			<option value = 'Male only'> Male only </option>
 			<option value = 'Female only'> Female only </option>
 		</select>
-
-	    <p> Skill Level (1-5 stars) </p>
-	    <p> Min: <span id = "rating_min"> 1 </span> <input type="range" class = "slider" id="rating_min_slider" value="1" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
-	    <p> Max: <span id = "rating_max"> 5 </span> <input type="range" class = "slider" id="rating_max_slider" value="5" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
+		{% endif %}
+		
+	    <!--{% if event %}
+	    	<p> Min: <span id = "rating_min"> {{event.rating_min}} </span> <input type="range" class = "slider" id="rating_min_slider" value="{{event.rating_min}}" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
+		    <p> Max: <span id = "rating_max"> {{event.rating_max}}</span> <input type="range" class = "slider" id="rating_max_slider" value="{{event.rating_max}}" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
+		{% else %}
+		    <p> Min: <span id = "rating_min"> 1 </span> <input type="range" class = "slider" id="rating_min_slider" value="1" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
+		    <p> Max: <span id = "rating_max"> 5 </span> <input type="range" class = "slider" id="rating_max_slider" value="5" min="1" max="5" step = "1" list="steplist" style = "display: inline-block; width: 30%; vertical-align: bottom;"> </p>
+		{% endif %}
+		
 		<datalist id="steplist">
 		    <option>1</option>
 		    <option>2</option>
 		    <option>3</option>
 		    <option>4</option>
 		    <option>5</option>
-		</datalist>
+		</datalist>-->
+
+		<script>
+		  $(function() {
+		    $( "#slider-range" ).slider({
+		      range: true,
+		      min: 1,
+		      max: 5,
+		      values: [ 1, 5 ],
+		      slide: function( event, ui ) {
+		        $( "#rating_range" ).val( ui.values[ 0 ] + " - " + ui.values[ 1 ] + " stars" );
+		      }
+		    });
+		    $( "#rating_range" ).val($( "#slider-range" ).slider( "values", 0 ) +
+		      " - " + $( "#slider-range" ).slider( "values", 1) + " stars");
+		  });
+		  </script>
+		 
+		<div class = "row" style = "vertical-align: center;">
+			<div class = "col-xs-3">
+				<input type="text" id="rating_range" readonly style="overflow: hidden; border: none; margin-left: 10px;">
+			</div>
+			<div class = "col-xs-9" style = "padding: 5px 40px 0px 0px;">
+				<div id="slider-range"></div>
+			</div>
+		</div>
+ 
+
+
 		<p class = "settings_error hide" id = "slider_error"> Max  must be greater than min </p>
+	    
+	    {% if event %}
+		{% else %}
+		{% endif %}
 	    <select class = "form-control new_event_input" id = "players_needed"> 
 			<option disabled selected> Players needed </option>
 			<option value = '1'> 1 player </option>
@@ -217,6 +312,7 @@
 	    	<a class = 'btn btn-info' id = 'home' href = "/firstpick/"> Home </a>
 	    	<div class = 'btn btn-info' id = 'create_another'> Create another game </div>
 	  	</div>
-
   	</div>
+  	{% endif %}
+
 {% endblock %}

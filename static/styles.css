@@ -48,7 +48,7 @@ html, body {
 .settings_input, .new_event_input{
 	display: block;
 	margin: 10px;
-	width: 80%;
+	width: 90%;
 }
 
 .settings_page{
@@ -104,6 +104,12 @@ html, body {
 	display: inline-block;
 }
 
+.floatleft{
+	float: left;
+	display: inline-block;
+}
+
+
 .msg_header{
 	background-color: lightgrey;
 	margin: 10px;
@@ -114,6 +120,17 @@ html, body {
 	background-color: white;
 	padding: 10px;
 	cursor: text;
+}
+
+.navbar_btn{
+	/*border: 1px black solid;*/
+	text-align: center;
+	display: inline-block;
+	width: 100%;
+}
+
+.center{
+	text-align: center;
 }
 
 

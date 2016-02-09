@@ -81,8 +81,9 @@ class Event(models.Model):
 	sport = models.ForeignKey(Sport)
 	start = models.DateTimeField('Start time')
 	location_name = models.CharField(max_length = 500)
-	location_lat = models.FloatField (default = 0)
-	location_lng = models.FloatField (default = 0)
+	address = models.CharField(max_length = 500)
+	lat = models.FloatField (default = 0)
+	lng = models.FloatField (default = 0)
 	gender = models.CharField(max_length=200, choices=GENDER_PREFERENCES)
 	rating_min = models.DecimalField(max_digits=5, decimal_places=2)
 	rating_max = models.DecimalField(max_digits=5, decimal_places=2)
@@ -90,7 +91,6 @@ class Event(models.Model):
 	status = models.CharField(max_length=200, choices=EVENT_STATUS)
 	invitees = models.ManyToManyField(User, default = None, related_name = "Invitees")
 	players = models.ManyToManyField(User, default = None, related_name = "Players")
-
 	
 	def __unicode__(self):
 		return str(self.name)
