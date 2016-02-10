@@ -64,7 +64,7 @@ class SportProfile(models.Model):
 	active = models.CharField(max_length=100, choices=ACTIVE_CHOICES, default = "Yes")
 
 GENDER_PREFERENCES = (
-	('No preference','No preference'),
+	('No gender preference','No gender preference'),
 	('Male only','Male only'),
 	('Female only','Female only'),
 )

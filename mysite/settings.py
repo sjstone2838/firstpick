@@ -124,7 +124,8 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+#Will need to support timezones in production
+USE_TZ = False
 
 # Allow all host headers
 ALLOWED_HOSTS = ['*']

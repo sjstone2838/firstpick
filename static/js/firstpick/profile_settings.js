@@ -47,7 +47,7 @@ $(document).ready(function(){
 
 		$("#sport_radius, #self_rating").html("");
 		$.each(sports, function(i, sport){
-			x = "<p>" +  sport +"<span class = 'sport_dist'><span class = 'hide adjust_dist decrement_dist' id = '" +sport+"_down'>&#9660</span> <span id = '" +sport+"_dist'>" + RADIUS_DEFAULT + "</span> <span id = '" +sport+"_miles'> miles </span><span class = 'adjust_dist increment_dist'id = '" +sport+"_up'>&#9650</span></span></p>"
+			x = "<p>" +  sport +"<span class = 'sport_dist'><span class = 'adjust_dist decrement_dist' id = '" +sport+"_down'>&#9660</span> <span id = '" +sport+"_dist'>" + RADIUS_DEFAULT + "</span> <span id = '" +sport+"_miles'> miles </span><span class = 'adjust_dist increment_dist'id = '" +sport+"_up'>&#9650</span></span></p>"
 			$("#sport_radius").append(x);
 			y = "<p>" + sport + "<span class = 'stars " + sport + "_star'> <span class = 'star' id = '"+ sport + "_star_1'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_2'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_3'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_4'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_5'> &#9734 </span> </span></p>"
 			$("#self_rating").append(y);
