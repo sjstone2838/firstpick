@@ -1,0 +1,15 @@
+<p> Hi {{invitee.first_name}}, </p>
+
+<p> {{e.organizer.first_name}} {{ e.organizer.last_name }} changed your upcoming {{e.sport | lower}}  game. Here are the updated game details: </p>
+<ul>
+	<li> Name: {{e.name}} </li>
+	<li> Date & Start Time: {{e.start}} </li>
+	<li> Location Name: {{e.location_name}} </li>
+	<li> Address: {{e.address}} </li>
+	<li> Player gender: {{e.gender}} </li>
+</ul> 
+
+<p> To rsvp to this game, or change your rsvp, click <a href = "http://localhost:8000/firstpick/rsvp/?userpk={{invitee.pk}}&eventpk={{e.pk}}"> here </a>
+
+<p> Get your game face on! </p>
+<p> - Team Firstpick </p> 

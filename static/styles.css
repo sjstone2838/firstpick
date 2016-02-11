@@ -97,6 +97,14 @@ html, body {
 	background-color: lightgrey;
 	margin: 10px;
 	padding: 10px;
+	line-height: 10px;
+}
+
+.event_details{
+	background-color: white;
+	margin: 10px;
+	padding: 10px;
+	line-height: 14px;
 }
 
 .floatright{
@@ -108,7 +116,6 @@ html, body {
 	float: left;
 	display: inline-block;
 }
-
 
 .msg_header{
 	background-color: lightgrey;
@@ -131,6 +138,38 @@ html, body {
 
 .center{
 	text-align: center;
+}
+
+#refresh_wheel{
+	position:fixed;
+	top: 5%;
+	height: 100%;
+	width: 100%;
+	background-color: grey;
+	opacity: 0.3;
+}
+
+.glyphicon-refresh{
+	font-size: 60pt;
+	width: 20%;
+	color: black;
+	margin-top: 50%;
+	margin-left: 40%;
+}
+
+.glyphicon-refresh-animate {
+    -animation: spin 1.5s infinite linear;
+    -webkit-animation: spin2 1.5s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
 }
 
 

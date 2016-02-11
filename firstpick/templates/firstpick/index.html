@@ -3,18 +3,41 @@
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'styles.css' %}" >
+<script src="{% static 'js/firstpick/index.js' %}"></script>
+
     
 <div class="container-fluid">
 	 <div class="row">
 		<div class="col-xs-12 col-md-12">
 		{% if upcoming_events %}
 			 {% for event in upcoming_events %}
-				 <div class = "event_box"> 
-				 	<h3> {{event.sport.name}} @ {{event.location_name}} </h3>
-				 	<h4> {{event.name}} </h4>
-				 	<h4> {{event.start}} </h4>
-				 	<p> {{event.relation|safe}} </p>
-				 </div>
+				 <div class = "event_box clickable"> 
+				 	<h4> {{event.sport.name}} @ {{event.location_name}} </h4>
+				 	<p> {{event.name}} <strong> {{event.start}} </strong> </p>
+				 	<p>{{event.relation|safe}} </p>
+				 	<div class = "event_details hide row">
+				 		<div class = "col-xs-6">
+					 		<p> Invitees </p>
+					 		<ul>
+					 		{% for invitee in event.invitees.all %}
+					 			<li> {{invitee.first_name}} {{invitee.last_name}}</li>
+					 		{% empty%}
+					 			<li> No pending invites </li>
+					 		{% endfor %}
+					 		</ul>
+				 		</div>
+				 		<div class = "col-xs-6">
+					 		<p> Players </p>
+					 		<ul>
+					 		{% for player in event.players.all %}
+					 			<li> {{player.first_name}} {{player.last_name}}</li>
+					 		{% empty%}
+					 			<li> No players yet </li>
+					 		{% endfor %}
+					 		</ul>
+					 	</div>
+			 		</div>
+				</div>
 			 {% endfor %}
 		{% else %}
 			<p> You do not have any upcoming events </p>

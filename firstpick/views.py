@@ -53,27 +53,9 @@ def index(request):
 		status = "upcoming", 
 		organizer = user,
 	)
-
 	
 	upcoming_events = list(chain(upcoming_events_organizer, upcoming_events_invitee, upcoming_events_player))
-	"""
-	# TO BE DELETED
-	if upcoming_events_player.count() != 0:
-		upcoming_events = upcoming_events_player
-		if upcoming_events_invitee.count() != 0:
-			upcoming_events = upcoming_events | upcoming_events_invitee
-			if upcoming_events_organizer.count() != 0:
-				upcoming_events = upcoming_events | upcoming_events_organizer
-	else:
-		if upcoming_events_invitee.count() != 0:
-			upcoming_events = upcoming_events_invitee
-			if upcoming_events_organizer.count() != 0:
-				upcoming_events = upcoming_events | upcoming_events_organizer
-		else:
-			if upcoming_events_organizer.count() != 0:
-				upcoming_events = upcoming_events_organizer
-	"""
-	#upcoming_events = upcoming_events.order_by('start')
+	upcoming_events.sort(key=lambda r: r.start)
 	for e in upcoming_events:
 		if e.organizer == user:
 			e.relation = "You're the organizer: <a href ='/firstpick/edit_event?eventpk=" + str(e.pk) +"'> Make changes </a>"
@@ -299,39 +281,61 @@ def create_and_send_mail(sender,recipient,subject,email_data,email_template,msg_
 	)
 
 def save_event(request):
-	# EDIT EVENT
 	# TODO: do not allow organizer to reduce players required below players enrolled
 	# TODO: do not allow organizer to crop skill range when invites sent to players outside range
-	print request.POST
 	try: 
 		user, userProfile = get_user_perms(request)
 		e = Event.objects.get(pk = request.POST['eventpk'])
-		#e.organizer = user
-		e.name = request.POST['name']
-		e.sport = Sport.objects.get(name = request.POST['sport'])
-		e.location_name = request.POST['location_name']
-		e.address = request.POST['address']
-		e.lat = float(request.POST['lat'])
-		e.lng = float(request.POST['lng'])
-		e.gender = request.POST['gender']
-		e.rating_min = float(request.POST['rating_min'])
-		e.rating_max = float(request.POST['rating_max'])
-		e.players_needed = int(request.POST['players_needed'])
-		e.status = "upcoming"
-		e.start = extract_datetime(request)
-		e.save()
+		if e.organizer == user: 
+			e.name = request.POST['name']
+			e.sport = Sport.objects.get(name = request.POST['sport'])
+			e.location_name = request.POST['location_name']
+			e.address = request.POST['address']
+			e.lat = float(request.POST['lat'])
+			e.lng = float(request.POST['lng'])
+			e.gender = request.POST['gender']
+			e.rating_min = float(request.POST['rating_min'])
+			e.rating_max = float(request.POST['rating_max'])
+			e.players_needed = int(request.POST['players_needed'])
+			e.status = "upcoming"
+			e.start = extract_datetime(request)
+			e.save()
 
-		#for invitee in e.invitees:
-
-
-		status = "success"
+			for invitee in e.invitees.all():
+				subject = "Firstpick: " + e.organizer.first_name + " " + e.organizer.last_name + " changed your upcoming " + e.sport.name.lower() + " game"
+				email_data = {
+					'invitee' : invitee,
+					'e' : e,
+				}
+				create_and_send_mail(e.organizer,invitee,subject,email_data,'firstpick/emails/event_changed.html','Event Changed')
+			status = "success"
+		else: 
+			status = "failed [USER DOES NOT HAVE ACCESS TO THIS EVENT]"
 	except: 
 		status = "failed"
 	return JsonResponse({'status': status })
 
 #TODO: Cancel Event
-# def cancel_event(request):
-	
+def cancel_event(request):
+	try:
+		user, userProfile = get_user_perms(request)
+		e = Event.objects.get(pk = request.POST['eventpk'])
+		if e.organizer == user: 
+			for invitee in e.invitees.all():
+				subject = "Firstpick: " + e.organizer.first_name + " " + e.organizer.last_name + " cancelled your upcoming " + e.sport.name.lower() + " game"
+				email_data = {
+					'invitee' : invitee,
+					'e' : e,
+				}
+				create_and_send_mail(e.organizer,invitee,subject,email_data,'firstpick/emails/event_cancelled.html','Event Cancelled')
+			e.status = "cancelled"
+			e.save()
+			status = "success"
+		else: 
+			status = "failed [USER DOES NOT HAVE ACCESS TO THIS EVENT]"
+	except: 
+		status = "failed"
+	return JsonResponse({'status': status })
 
 
 

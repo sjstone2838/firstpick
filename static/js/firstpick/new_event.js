@@ -68,13 +68,14 @@ $(document).ready(function(){
 	        	'rating_max': $("#slider-range").slider("values",1),
 	        	'players_needed': $("#players_needed").val(),
 			}
-
+			$("#refresh_wheel").removeClass("hide");
 			if ($(this).attr("id") == "create_event"){
 				$.ajax({
 			        type: 'POST',
 			        url: '/firstpick/create_event/',
 			        data: data,
 			        success: function(response) {
+			        	$("#refresh_wheel").addClass("hide");
 		            	$("#create_box").addClass("hide");
 		            	$("#event_created").removeClass("hide");
 		            	if (response.invites_sent == 0){
@@ -90,7 +91,7 @@ $(document).ready(function(){
 		            	}
 		        	}
 			    });
-			} else {
+			} else if ($(this).attr("id") == "edit_event") {
 				data['eventpk'] = $("#eventpk").html();
 				$.ajax({
 			        type: 'POST',
@@ -98,10 +99,25 @@ $(document).ready(function(){
 			        data: data,
 			        success: function(response) {
 			        	console.log(response.status);
+		            	$("#refresh_wheel").addClass("hide");
 		            	$("#create_box").addClass("hide");
 		            	$("#event_saved").removeClass("hide");
 		        	}
 			    });
+			} else {
+				data['eventpk'] = $("#eventpk").html();
+				$.ajax({
+			        type: 'POST',
+			        url: '/firstpick/cancel_event/',
+			        data: data,
+			        success: function(response) {
+			        	console.log(response.status);
+		            	$("#refresh_wheel").addClass("hide");
+		            	$("#create_box").addClass("hide");
+		            	$("#event_saved").removeClass("hide");
+		        	}
+			    });
+
 			}
 		}
 	});

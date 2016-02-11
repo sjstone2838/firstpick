@@ -33,12 +33,6 @@
 	 	<div class = "new_event_input hide" id = "organizerpk"> {{user.pk}} </div>
 	 	<div class = "new_event_input hide" id = "eventpk"> {{event.pk}} </div>
 
-		{% if event %} 
-			<input class = "new_event_input" id = "name" value = "{{event.name}}"> 
-		{% else %}
-			<input class = "new_event_input" id = "name" placeholder = "Name your game"> 
-		{% endif %}
-
 		<select class = "form-control new_event_input" id = "sport">
 			<option disabled selected value = "Select sport"> Select sport</option>
 			{% for sport in sports %}
@@ -47,30 +41,41 @@
 		</select>
 		{% if event %}  <script> $("#sport").val("{{event.sport}}"); </script> {% endif %}
 
-		{% if event %}
-		<input class = "new_event_input" type="text" id="date" value ="{{event.date}}">
+		{% if event %} 
+			<input class = "new_event_input" id = "name" value = "{{event.name}}"> 
 		{% else %}
-		<input class = "new_event_input" type="text" id="date" placeholder = "Date">
+			<input class = "new_event_input" id = "name" placeholder = "Short description, i.e. 'Casual 3-on-3 game'"> 
 		{% endif %}
-	 	<script> 
-	 		//https://jqueryui.com/datepicker/
-	 		$(function() { $( "#date" ).datepicker({ minDate: 0 })}); 
-		</script>
-		
-		{% if event %}
-		<input class = "new_event_input" type="text" id="time" value = "{{event.time}}">
-		{% else %}
-		<input class = "new_event_input" type="text" id="time" placeholder = "Time">
-		{% endif %}
-	 	<script> 
-	 		//http://jonthornton.github.io/jquery-timepicker/
-	 		$(function() { $( "#time" ).timepicker({ 'step': 15 , 'scrollDefault': 'now' }); }); 
-		</script>
+
+		<div class = "row">
+			<div class = "col-xs-6">
+				{% if event %}
+				<input class = "new_event_input" type="text" id="date" value ="{{event.date}}">
+				{% else %}
+				<input class = "new_event_input" type="text" id="date" placeholder = "Date">
+				{% endif %}
+			 	<script> 
+			 		//https://jqueryui.com/datepicker/
+			 		$(function() { $( "#date" ).datepicker({ minDate: 0 })}); 
+				</script>
+			</div>
+			<div class = "col-xs-6">
+				{% if event %}
+				<input class = "new_event_input" type="text" id="time" value = "{{event.time}}">
+				{% else %}
+				<input class = "new_event_input" type="text" id="time" placeholder = "Start time">
+				{% endif %}
+			 	<script> 
+			 		//http://jonthornton.github.io/jquery-timepicker/
+			 		$(function() { $( "#time" ).timepicker({ 'step': 15 , 'scrollDefault': 'now' }); }); 
+				</script>
+			</div>
+		</div>
 
 		{% if event %}
 		<input class = "new_event_input" id = "location_name" value = "{{event.location_name}}"> 
 		{% else %}
-		<input class = "new_event_input" id = "location_name" placeholder = "Location Name"> 
+		<input class = "new_event_input" id = "location_name" placeholder = "Location name, i.e. Back Bay YMCA"> 
 		{% endif %}
 
 		{% if event %}
@@ -84,7 +89,7 @@
 		{% if event %}
 	    <input id="pac-input" class="new_event_input" type="text" value = "{{event.address}}">
 		{% else %}
-	    <input id="pac-input" class="new_event_input" type="text" placeholder="Address">
+	    <input id="pac-input" class="new_event_input" type="text" placeholder="Start typing address...">
 		{% endif %}
 
 		<div id = "map_box" style = "overflow: hidden;">
@@ -283,6 +288,7 @@
 		<div class = "settings_btns">
 	    	{% if event %}
 	    	<div class = 'btn btn-info submit' id = 'edit_event'> Save changes </div>
+	    	<div class = 'btn btn-info submit' id = 'cancel_event'> Cancel game </div>
 			{% else %}
 	    	<div class = 'btn btn-info submit' id = 'create_event'> Create game </div>
 			{% endif %}

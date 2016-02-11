@@ -13,6 +13,8 @@
 	<p> Subject: {{msg.subject}} </p>
 	<div class = "msg_body hide"> {{msg.body | safe | escape }} </div>
 </div>
+{% empty %}
+<p class = "center"> You have not received any messages </p>
 {% endfor %}
   
 {% endblock %}
