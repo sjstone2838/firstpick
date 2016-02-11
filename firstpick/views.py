@@ -315,7 +315,6 @@ def save_event(request):
 		status = "failed"
 	return JsonResponse({'status': status })
 
-#TODO: Cancel Event
 def cancel_event(request):
 	try:
 		user, userProfile = get_user_perms(request)
@@ -337,8 +336,6 @@ def cancel_event(request):
 		status = "failed"
 	return JsonResponse({'status': status })
 
-
-
 def check_user_is_invitee(event,user):
 	if event.invitees.filter(pk = user.pk).count() == 1:
 		return True
@@ -354,8 +351,8 @@ def check_user_is_player(event,user):
 def rsvp(request):
 	user = event = error_msg = {}
 	try: 
-		user = User.objects.get(pk = userpk)
-		event = Event.objects.get(pk = eventpk)
+		user = User.objects.get(pk = request.GET['userpk'])
+		event = Event.objects.get(pk = request.GET['eventpk'])
 	except:
 		error_msg = "Something went wrong [UNABLE TO LOCATE USER OR EVENT]"
 		return render_to_response('firstpick/rsvp.html', {'error_msg': error_msg})
@@ -431,7 +428,7 @@ def handle_rsvp(request):
 				event.players_needed += 1	
 				event.save()		
 				status = "Got it - we'll let " + str(event.organizer.first_name) + " know you can't make it"
-				# TODO: SEND EMAIL TO ORGANIZER
+				# SEND EMAIL TO ORGANIZER
 				subject = "Firstpick: " + user.first_name + " can't make it to your game"
 				email_data = {
 					'user' : user,
@@ -453,4 +450,7 @@ def messages(request):
 		'messages': messages,
 	})
 
-
+import time 
+while True:
+    print "This prints once a minute."
+    time.sleep(5)  # Delay for 1 minute (60 seconds)

@@ -49,6 +49,7 @@ html, body {
 	display: block;
 	margin: 10px;
 	width: 90%;
+	border: 1px solid lightgrey;
 }
 
 .settings_page{

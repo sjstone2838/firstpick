@@ -6,15 +6,17 @@
 <script src="{% static 'js/firstpick/rsvp.js' %}"></script>
 
 {% if error_msg%}
+{{error_msg}}
 
 {% else %}
 
 
 <div id="event_description">
-	<h3> {{event.name }}</h3>
-	<p> {{event.sport.name }}</p>
+	<h3> {{event.sport }} @ {{event.location_name}} </h3>
+	<p> {{event.name }}</p>
 	<p> Organized by {{event.organizer.first_name }} {{event.organizer.last_name }}</p>
 	<p> {{event.start }}</p>
+	<p> Skill Level: {{event.rating_min | floatformat }}-{{event.rating_max | floatformat}} stars</p>
 	<div class = "settings_btns">
 		<div class = "btn btn-success rsvp" id = "yes"> I'll be there! </div>
 		<div class = "btn btn-danger rsvp" id = "no"> I can't make it </div>

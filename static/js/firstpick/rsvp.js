@@ -11,6 +11,7 @@ $(document).ready(function(){
 	        var hash = hashes[i].split('=');
 	        vars[hash[0]] = hash[1];
 	    }
+	    $("#refresh_wheel").removeClass("hide");
 		$.ajax({
 	        type: 'POST',
 	        url: '/firstpick/handle_rsvp/',
@@ -19,6 +20,7 @@ $(document).ready(function(){
 	        	'rsvp': rsvp,
 	        },
 	        success: function(response) {
+	    		$("#refresh_wheel").addClass("hide");
 	        	$("#event_description").addClass("hide");
 	        	$("#rsvp_response").removeClass("hide");
 	        	$("#rsvp_response_msg").html(response.status);
