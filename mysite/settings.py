@@ -206,9 +206,11 @@ EMAIL_USE_TLS = False
 
 # CELERY
 # https://www.caktusgroup.com/blog/2014/06/23/scheduling-tasks-celery/
+"""
 import djcelery
 djcelery.setup_loader()
 BROKER_URL = 'django://'
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+"""
 

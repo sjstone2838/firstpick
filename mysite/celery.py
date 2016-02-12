@@ -1,3 +1,4 @@
+"""
 from __future__ import absolute_import
 import os
 from celery import Celery
@@ -49,4 +50,4 @@ def send_event_reminders(self):
 			}
 			create_and_send_mail(sender,recipient,subject,email_data,'firstpick/emails/reminder.html','Event Reminder')
 
-
+"""
