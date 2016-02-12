@@ -33,7 +33,7 @@ def send_event_reminders(self):
 	# IF RUN-TIME IS NON-TRIVIAL AND ONLY ONE CELERY WORKER (THREAD),
 	# THEN THIS MAY LEAVE GAPS FOR EVENTS WHERE NOTIFICATIONS NOT SENT
 	PRECEED_BY = 60 #minutes
-	WINDOW = 15 # minutes
+	WINDOW = 15 #minutes
 	now = datetime.datetime.now()
 	start = now + timedelta(minutes = PRECEED_BY)
 	end = now + timedelta(minutes = PRECEED_BY + WINDOW)
