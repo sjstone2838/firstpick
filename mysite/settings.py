@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.facebook',
     #'debug_toolbar',
-    #'djcelery',
-    #'kombu.transport.django',
+    'djcelery',
+    'kombu.transport.django',
 
 ]
 
@@ -207,10 +207,14 @@ EMAIL_USE_TLS = False
 # CELERY
 # https://www.caktusgroup.com/blog/2014/06/23/scheduling-tasks-celery/
 """
+"""
 import djcelery
 djcelery.setup_loader()
-BROKER_URL = 'django://'
+# FOR DEVELOPMENT ONLY
+# BROKER_URL = 'django://'
+BROKER_URL = 'amqp://ippfyxpn:e_1wvCs9B99N5zQLIDi2A9sVPbIGiMrT@moose.rmq.cloudamqp.com/ippfyxpn'
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-"""
+BROKER_POOL_LIMIT = 1
+
 
