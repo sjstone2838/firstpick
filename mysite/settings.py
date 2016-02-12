@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.facebook',
     #'debug_toolbar',
-    'djcelery',
-    'kombu.transport.django',
+    #'djcelery',
+    #'kombu.transport.django',
 
 ]
 
