@@ -80,6 +80,7 @@ class Event(models.Model):
 	name = models.CharField(max_length = 500)
 	sport = models.ForeignKey(Sport)
 	start = models.DateTimeField('Start time')
+	duration = models.IntegerField(default = 60)
 	location_name = models.CharField(max_length = 500)
 	address = models.CharField(max_length = 500)
 	lat = models.FloatField (default = 0)
