@@ -72,6 +72,7 @@ GENDER_PREFERENCES = (
 EVENT_STATUS = (
 	('completed', 'completed'),
 	('cancelled','cancelled'),
+	('occurring','occurring'),
 	('upcoming','upcoming'),
 )
 
