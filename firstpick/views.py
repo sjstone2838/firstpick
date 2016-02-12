@@ -449,8 +449,3 @@ def messages(request):
 		'user': user,
 		'messages': messages,
 	})
-
-import time 
-while True:
-    print "This prints once a minute."
-    time.sleep(5)  # Delay for 1 minute (60 seconds)

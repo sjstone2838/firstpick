@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.facebook',
     #'debug_toolbar',
+    'djcelery',
+    'kombu.transport.django',
 
 ]
 
@@ -118,7 +120,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = ('America/New_York')
 
 USE_I18N = True
 
@@ -202,4 +204,11 @@ EMAIL_HOST_USER = 'invites@deepdive.us'
 EMAIL_HOST_PASSWORD = ']bebickheEF8]'
 EMAIL_USE_TLS = False
 
+# CELERY
+# https://www.caktusgroup.com/blog/2014/06/23/scheduling-tasks-celery/
+import djcelery
+djcelery.setup_loader()
+BROKER_URL = 'django://'
+
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 

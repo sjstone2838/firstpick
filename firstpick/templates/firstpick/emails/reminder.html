@@ -1,0 +1,8 @@
+<p> Hi {{invitee.first_name}}, </p>
+
+<p> Just a reminder that you're playing {{e.sport.name | lower }} shortly at {{e.location_name}}. The game starts at {{e.start}} and the organizer is {{e.organizer.first_name}} {{e.organizer.last_name}}. </p>
+
+<p>If you can't make it, please click <a href = "http://localhost:8000/firstpick/rsvp/?userpk={{invitee.pk}}&eventpk={{e.pk}}"> here </a>
+
+<p> Get your game face on! </p>
+<p> - Team Firstpick </p> 

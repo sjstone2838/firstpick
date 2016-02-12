@@ -101,6 +101,7 @@ MSG_CHOICES = (
 	('RSVP No','RSVP No'),
 	('Event Changed','Event Changed'),
 	('Event Cancelled','Event Cancelled'),
+	('Event Reminder','Event Reminder'),
 )
 
 class Msg(models.Model):

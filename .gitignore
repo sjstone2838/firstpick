@@ -1,7 +1,7 @@
 #from https://github.com/github/gitignore/blob/master/Python.gitignore
 venv
 *.pyc
-*.sqlite3
+db.sqlite3
 staticfiles
 #ignore all temporary files
 ~*
