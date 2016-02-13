@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-    'allauth.socialaccount.providers.facebook',
+    #'allauth.socialaccount.providers.facebook',
     #'debug_toolbar',
     'djcelery',
     'kombu.transport.django',
@@ -199,12 +199,17 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 LOGIN_REDIRECT_URL = '/firstpick/'
 LOGOUT_REDIRECT_URL = '/firstpick/'
 SOCIALACCOUNT_QUERY_EMAIL = True
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+
+"""
 SOCIALACCOUNT_PROVIDERS = {
     'facebook': {
         'SCOPE': ['email'],
         'METHOD': 'js_sdk'  # instead of 'oauth2'
     }
 }
+"""
 
 SOCIAL_AUTH_FACEBOOK_KEY = '1705025099721326'
 SOCIAL_AUTH_FACEBOOK_SECRET = '0f89eeb4ed63dbabde57259463f613ee'

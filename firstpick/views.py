@@ -36,50 +36,49 @@ def get_user_perms(request):
 @login_required(login_url = '/accounts/login/')
 def index(request):
 	#if UserProfile exists
-	#try:
-	user, userProfile = get_user_perms(request)
-	upcoming_events = {}
-	
+	try:
+		user, userProfile = get_user_perms(request)
+		upcoming_events = {}
 
-	upcoming_events_player = Event.objects.filter(
-		status = "upcoming", 
-		players = user,
-	)
-	upcoming_events_invitee = Event.objects.filter(
-		status = "upcoming", 
-		invitees = user,
-	)
-	upcoming_events_organizer = Event.objects.filter(
-		status = "upcoming", 
-		organizer = user,
-	)
+		upcoming_events_player = Event.objects.filter(
+			status = "upcoming", 
+			players = user,
+		)
+		upcoming_events_invitee = Event.objects.filter(
+			status = "upcoming", 
+			invitees = user,
+		)
+		upcoming_events_organizer = Event.objects.filter(
+			status = "upcoming", 
+			organizer = user,
+		)
+		
+		upcoming_events = list(chain(upcoming_events_organizer, upcoming_events_invitee, upcoming_events_player))
+		upcoming_events.sort(key=lambda r: r.start)
+		for e in upcoming_events:
+			if e.organizer == user:
+				e.relation = "You're the organizer: <a href ='/firstpick/edit_event?eventpk=" + str(e.pk) +"'> Make changes </a>"
+			elif e.players.filter(pk = user.pk).count() == 1:
+				e.relation = "You're playing: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Change </a>"
+			else: 
+				e.relation = "Invite pending: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Respond </a>"
+		
+		return render_to_response('firstpick/index.html', {
+			'user': user,
+			'googlekey': settings.GOOGLE_API_KEY,
+			'upcoming_events': upcoming_events,
+		})
+	except:
+		return redirect('/firstpick/profile_settings', request = request)
 	
-	upcoming_events = list(chain(upcoming_events_organizer, upcoming_events_invitee, upcoming_events_player))
-	upcoming_events.sort(key=lambda r: r.start)
-	for e in upcoming_events:
-		if e.organizer == user:
-			e.relation = "You're the organizer: <a href ='/firstpick/edit_event?eventpk=" + str(e.pk) +"'> Make changes </a>"
-		elif e.players.filter(pk = user.pk).count() == 1:
-			e.relation = "You're playing: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Change </a>"
-		else: 
-			e.relation = "Invite pending: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Respond </a>"
-	
-	#except:
-		#return redirect('/firstpick/profile_settings', request = request)
-	return render_to_response('firstpick/index.html', {
-		'user': user,
-		'googlekey': settings.GOOGLE_API_KEY,
-		'upcoming_events': upcoming_events,
-	})
 
 def profile_settings(request):
 	try:
 		user, userProfile = get_user_perms(request)
-		userProfile.gender = SocialAccount.objects.get(user = user).extra_data['gender']
+		#userProfile.gender = SocialAccount.objects.get(user = user).extra_data['gender']
 	except:
    		user = request.user
    		userProfile = {}
-   		userProfile['gender'] = "Gender"
 
 	return render_to_response('firstpick/profile_settings.html', {
 		'user': user,
@@ -221,6 +220,7 @@ def create_event(request):
 		players_needed = int(request.POST['players_needed']),
 		status = "upcoming",
 		start = extract_datetime(request),
+		duration = int(request.POST['duration']),
 	)
 
 	# FIND ALL USERS WHO MEET CRITERIA
@@ -299,6 +299,7 @@ def save_event(request):
 			e.players_needed = int(request.POST['players_needed'])
 			e.status = "upcoming"
 			e.start = extract_datetime(request)
+			e.duration = int(request.POST['duration']),
 			e.save()
 
 			for invitee in e.invitees.all():

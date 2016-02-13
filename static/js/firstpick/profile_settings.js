@@ -5,10 +5,6 @@ $(document).ready(function(){
 
 	$("#settings_page-1").css("max-height","0px");
 
-	// EXPAND MAP TO BECOME VISIBLE; MAP NEEDS TO BE SHOWN TO LOAD PROPERLY
-	$("#next-0").click(function(){
-		$("#settings_page-1").css("max-height","100%");
-	});
 
 	function showNext(n){
 		$("#settings_page-" + n).addClass("hide");
@@ -27,15 +23,19 @@ $(document).ready(function(){
 	$(".settings_next").click(function(){
 		n = parseInt($(this).attr("id").split("-")[1]);
 		if (n == 0 && ($("#first_name").val() == "" || $("#last_name").val() == "" || $("#email").val() == "" || $("#gender").val() == "")) {
-			$("#settings_error-" + n).removeClass("hide")
+			$("#settings_error-" + n).removeClass("hide");
 		} else if (n == 1 && ($("#home_lat").html() == "None" || $("#home_lat").html() == "None")){
-			$("#settings_error-" + n).removeClass("hide")
+			$("#settings_error-" + n).removeClass("hide");
 		} else if (n == 2 && $("#sport_selection").find('input:checked').length == 0){
-			$("#settings_error-" + n).removeClass("hide")
+			$("#settings_error-" + n).removeClass("hide");
 		// NOTHING TO CHECK FOR page 3; page 4 handled separately
 		} else {
-			$("#settings_error-" + n).addClass("hide")
-			showNext (n)
+			// EXPAND MAP TO BECOME VISIBLE; MAP NEEDS TO BE SHOWN TO LOAD PROPERLY
+			if (n == 0){
+				$("#settings_page-1").css("max-height","100%");
+			}
+			$("#settings_error-" + n).addClass("hide");
+			showNext (n);
 		}
 	});
 
@@ -90,6 +90,7 @@ $(document).ready(function(){
 	
 	// submit data
 	$("#submit").click(function(){
+		$("#refresh_wheel").removeClass("hide");
 		var ratings = 0;
 		$.each(sports, function(i, sport){
 			if( $("." + sport + "_star").children(".active").length == 0){
@@ -120,6 +121,7 @@ $(document).ready(function(){
 		        	'sport_count': sports.length,
 		        },
 		        success: function(response) {
+					$("#refresh_wheel").addClass("hide");
 	            	location.href = "/firstpick/";
 	        	}
 		    });

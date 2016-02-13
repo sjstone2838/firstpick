@@ -28,6 +28,9 @@ $(document).ready(function(){
 		} else if ($("#time").val() == ""){
 			$("#submit_error").removeClass("hide").html("Please choose a start time");
 			return false;
+		} else if ($("#duration").val() == null){
+			$("#submit_error").removeClass("hide").html("Please choose game duration");
+			return false;
 		} else if ($("#location_name").val() == ""){
 			$("#submit_error").removeClass("hide").html("Please name your location");
 			return false;
@@ -59,6 +62,7 @@ $(document).ready(function(){
 	        	'sport': $("#sport").val(),
 	        	'date': $("#date").val(),
 	        	'time': $("#time").val(),
+	        	'duration': $("#duration").val(),
 	        	'location_name': $("#location_name").val(),
 	        	'address': $("#pac-input").val(),
 	        	'gender': $("#gender").val(),

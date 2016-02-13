@@ -17,24 +17,24 @@
 				 	<p>{{event.relation|safe}} </p>
 				 	<div class = "event_details hide row">
 				 		<div class = "col-xs-6">
-					 		<p> Invitees </p>
-					 		<ul>
+					 		<p class = "center"> Invitees </p>
+					 		<ol>
 					 		{% for invitee in event.invitees.all %}
 					 			<li> {{invitee.first_name}} {{invitee.last_name}}</li>
 					 		{% empty%}
 					 			<li> No pending invites </li>
 					 		{% endfor %}
-					 		</ul>
+					 		</ol>
 				 		</div>
 				 		<div class = "col-xs-6">
-					 		<p> Players </p>
-					 		<ul>
+					 		<p class = "center"> Players </p>
+					 		<ol>
 					 		{% for player in event.players.all %}
 					 			<li> {{player.first_name}} {{player.last_name}}</li>
 					 		{% empty%}
 					 			<li> No players yet </li>
 					 		{% endfor %}
-					 		</ul>
+					 		</ol>
 					 	</div>
 			 		</div>
 				</div>

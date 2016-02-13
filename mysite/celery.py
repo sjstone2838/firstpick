@@ -50,5 +50,26 @@ def send_event_reminders(self):
 			}
 			create_and_send_mail(sender,recipient,subject,email_data,'firstpick/emails/reminder.html','Event Reminder')
 
+@app.task(bind=True)
+def update_event_status(self):
+	# RUN EVERY 1 MIN
+	now = datetime.datetime.now()
+	# Get all events where events.status = 'upcoming' and start time before now, set event.status to "occuring"
+	events_started = Event.objects.filter(status = 'upcoming', start__lte = now)
+	for event in events_started:
+		event.status = 'occurring'
+		event.save()
+
+	# Get all events with status 'occuring'; for each event if event.start + event.duration > now, 
+	# set event.status to "completed"
+	events_occuring = Event.objects.filter(status = 'occurring')
+	for event in events_occuring:
+		end = event.start + timedelta(minutes = event.duration)
+		if end <= datetime.datetime.now():
+			event.status = 'completed'
+			event.save()
+	
+	# TODO: SEND RATING REQUEST EMAIL TO PARTICIPANTS 
+
 
 

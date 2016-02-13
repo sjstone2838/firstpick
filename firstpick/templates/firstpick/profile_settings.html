@@ -5,30 +5,45 @@
 <link rel="stylesheet" href="{% static 'styles.css' %}" >
 <script src="{% static 'js/firstpick/profile_settings.js' %}"></script>
 
-
-
     <div class = "settings_page" id = 'settings_page-0'>
-      <h3> Verify your account information </h3>
-      <input class = 'settings_input' type='text' id = 'first_name' value = '{{user.first_name}}'> 
-      <input class = 'settings_input' type='text' id = 'last_name' value = '{{user.last_name}}'> 
+      <h3> Your basic details </h3>
+       
+       {% if userProfile %}
+       <input class = 'settings_input' type='text' id = 'first_name' value = '{{user.first_name}}'> 
+       <input class = 'settings_input' type='text' id = 'last_name' value = '{{user.last_name}}'> 
+       {% else %}
+       <input class = 'settings_input' type='text' id = 'first_name' placeholder = "First name"> 
+       <input class = 'settings_input' type='text' id = 'last_name' placeholder = "Last name"> 
+       {% endif %}
+
       <input class = 'settings_input' type='text' id = 'email' value = '{{user.email}}'> 
-      <select class = 'settings_input' type='text' id = 'gender' value = '{{userProfile.gender}}'>
+
+      {% if userProfile %}
+      <select class = 'settings_input' type='text' id = 'gender'>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
       </select>
+      <script> $("#gender").val("{{userProfile.gender}}"); </script>
+      {% else %}
+      <select class = 'settings_input' type='text' id = 'gender'>
+            <option disabled selected> Gender </option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+      </select>
+      {% endif %}
+
       <div class = "settings_error hide" id = "settings_error-0"> Please fill in all fields </div>
       <div class = "settings_btns">
         <div class = 'btn btn-info settings_next' id = 'next-0'> Next</div>
       </div>
     </div>
 
-
     <div class = "settings_page" id = 'settings_page-1'>
       <h3> Where do you live? </h3>
       <div class = "hide" id = "home_lat">None</div>
       <div class = "hide" id = "home_lng">None</div>
-      <input id="pac-input" class="settings_input" type="text" placeholder="Address search...">
       <div class = "settings_map">
+      	<input id="pac-input" class="settings_input" type="text" placeholder="Start typing your address here..." style = "margin-left: 20px;">
         <div id="map"></div>
         <script>
 
@@ -149,17 +164,34 @@
 
           }
         </script>
+        <!--COULD NOT GET THIS TO WORK 
+        {% if userProfile %}
+          <input class = "" id = "userProfileLat" value = "{{userProfile.home_lat}}">
+          <input class = "" id = "userProfileLng" value = "{{userProfile.home_lng}}">
+	      <script>	
+          var pos = {lat: int($("#userProfileLat").val()), lng: int($("#userProfileLng").val()});
+          function initMap() {
+
+            var map = new google.maps.Map(document.getElementById('map2'), {
+              center: pos,
+              zoom: 12,
+              mapTypeControl:false,  
+            });
+          }
+        </script>
+	    {% endif %}
+	    -->
         <script async defer src="https://maps.googleapis.com/maps/api/js?key={{googlekey}}&libraries=places&callback=initMap"></script>
       </div>
       <div class = "settings_error hide" id = "settings_error-1"> Please choose an address </div>
-      <div class = "settings_btns">
+      <div class = "settings_btns" style = "margin-top: 10%;">
         <div class = 'btn btn-info settings_back' id = 'back-1'> Back </div>
-        <div class = 'btn btn-info settings_next' id = 'next-1'> Save address </div>
+        <div class = 'btn btn-info settings_next' id = 'next-1'> Next </div>
       </div>
     </div>
 
     <div class = "settings_page hide" id = 'settings_page-2'>
-      <h3> What sports do you want get invites for? </h3>
+      <h3> What sports do you play? </h3>
       <div id="sport_selection">
       {% for sport in sports %}
           <label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label>
@@ -188,7 +220,7 @@
       <div class = "settings_error hide" id = "settings_error-4"> Please rate yourself for each sport </div>
       <div class = "settings_btns">
         <div class = 'btn btn-info settings_back' id = 'back-4'> Back </div>
-        <div class = 'btn btn-info' id = 'submit'> Create profile </div>
+        <div class = 'btn btn-info' id = 'submit'> Save profile </div>
       </div>
     </div>
   
