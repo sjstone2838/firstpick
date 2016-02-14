@@ -171,7 +171,8 @@ ul, ol {
 
 #refresh_wheel{
 	position:fixed;
-	top: 6%;
+	top: 0%;
+	left: 0%;
 	height: 100%;
 	width: 100%;
 	background-color: grey;
