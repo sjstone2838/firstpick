@@ -19,17 +19,21 @@ class EventAdmin(admin.ModelAdmin):
 	list_filter = ('sport', 'organizer')
 	filter_horizontal = ('players','invitees')
 
-
 class SportProfileAdmin(admin.ModelAdmin):
-	list_display = ('user', 'id', 'sport','radius','rating_count','rating_avg','active')
+	list_display = ('user', 'id', 'sport','radius','active')
 	list_filter = ('sport','user','active')
 
 class MsgAdmin(admin.ModelAdmin):
 	list_display = ('sender','recipient','datetime','msg_type','subject')
 	list_filter = ('msg_type','sender','recipient')
 
+class RatingAdmin(admin.ModelAdmin):
+	list_display = ('player','id','rater','event','sport','datetime','attended','rating')
+	list_filter = ('player','rater','event','sport','attended','rating')
+
 admin.site.register(UserProfile,UserProfileAdmin)
 admin.site.register(Sport,SportAdmin)
 admin.site.register(Event,EventAdmin)
 admin.site.register(SportProfile,SportProfileAdmin)
 admin.site.register(Msg,MsgAdmin)
+admin.site.register(Rating,RatingAdmin)

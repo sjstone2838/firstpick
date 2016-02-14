@@ -20,7 +20,7 @@ ul, ol {
 
 .settings_map {
 	text-align: center; 
-	height: 400px;
+	height: 300px;
 }
 
 #map {
@@ -100,6 +100,11 @@ ul, ol {
     padding: 5px;
 }
 
+.rating_star{
+	cursor: pointer; 
+    cursor: hand;
+}
+
 .settings_error{
 	text-align: center;
 	color: red;
@@ -139,6 +144,11 @@ ul, ol {
 	background-color: lightgrey;
 	margin: 10px;
 	padding: 10px;
+
+}
+
+.msg_header_line{
+	margin: 0px;
 }
 
 .msg_body{

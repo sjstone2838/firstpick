@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'styles.css' %}" >
+<script src="{% static 'js/firstpick/rating.js' %}"></script>
+
+{% if error_msg%}
+{{error_msg}}
+{% else %}
+
+	<div id = "attendance_page">
+		<p> Hi {{user.first_name}}, </p>
+		<p> Thanks for playing {{event.sport.name | lower }} today. We'd like to ask you two questions about your game - this data helps us recommend the right people for the right games. </p>
+		<p> (1) Did the following people show up? </p>
+		{% for participant in event.participants %}
+			<p class = "participant" id = "attendance_{{participant.pk}}"> 
+				<span class = "btn btn-default attendance Yes" id = "Yes_{{participant.pk}}"> Yes </span>
+				<span class = "btn btn-default attendance No" id = "No_{{participant.pk}}"> No </span>
+				<span class = "btn btn-default attendance Unknown" id = "Unknown_{{participant.pk}}"> Don't know </span>
+				{{participant.first_name}} {{participant.last_name}} 
+			</p>
+		{% endfor %}
+	</div>
+	<div class = "hide" id = "rating_page">
+		<p> (2) For those who showed up, how would you rate their {{event.sport.name | lower }} skills? </p>
+		<p> If you don't know, leave blank </p>
+		{% for participant in event.participants %}
+			<p class = "hide" id = "rating_{{participant.pk}}"> 
+				<span id = 'stars_{{participant.pk}}'> 
+					<span class = 'rating_star' id = '{{participant.pk}}_1'> &#9734 </span> 
+					<span class = 'rating_star' id = '{{participant.pk}}_2'> &#9734 </span> 
+					<span class = 'rating_star' id = '{{participant.pk}}_3'> &#9734 </span> 
+					<span class = 'rating_star' id = '{{participant.pk}}_4'> &#9734 </span> 
+					<span class = 'rating_star' id = '{{participant.pk}}_5'> &#9734 </span> 
+				</span>
+				{{participant.first_name}} {{participant.last_name}} 
+			</p>
+		{% endfor %}
+		<div class = "settings_btns">
+	    	<div class = 'btn btn-info' id = 'back'> Back </div>
+	    	<div class = 'btn btn-info' id = 'submit'> Submit </div>
+	  	</div>
+	</div>
+	<div class = "hide" id = "confirmation">
+		Thanks - your feedback's been saved!
+		<div class = "settings_btns">
+	    	<a class = 'btn btn-info' href = "/firstpick/"> Home </a>
+	  	</div>
+	</div>
+	<div class = "hide" id = "error">
+		<div id = "error_msg"></div>
+		<div class = "settings_btns">
+	    	<a class = 'btn btn-info' href = "/firstpick/"> Home </a>
+	  	</div>
+	</div>
+
+{% endif %}
+{% endblock %}

@@ -15,7 +15,8 @@
 	<h3> {{event.sport }} @ {{event.location_name}} </h3>
 	<p> {{event.name }}</p>
 	<p> Organized by {{event.organizer.first_name }} {{event.organizer.last_name }}</p>
-	<p> {{event.start }}</p>
+	<p> Date and Time: {{event.start }}</p>
+	<p> Duration: {{event.duration}} </p>
 	<p> Skill Level: {{event.rating_min | floatformat }}-{{event.rating_max | floatformat}} stars</p>
 	<div class = "settings_btns">
 		<div class = "btn btn-success rsvp" id = "yes"> I'll be there! </div>

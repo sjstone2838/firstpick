@@ -3,6 +3,8 @@ from django.db import models
 from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
 import hashlib
+from django.core.validators import MaxValueValidator, MinValueValidator
+
  
 class Sport(models.Model):
 	name = models.CharField(max_length=200, unique = True)
@@ -58,9 +60,6 @@ class SportProfile(models.Model):
 	user = models.ForeignKey(User)
 	sport = models.ForeignKey(Sport)
 	radius = models.IntegerField (default = 1)
-	# use rating_count to calculate rating_avg
-	rating_count =models.IntegerField (default = 0)
-	rating_avg = models.FloatField (default = 2.5)
 	active = models.CharField(max_length=100, choices=ACTIVE_CHOICES, default = "Yes")
 
 GENDER_PREFERENCES = (
@@ -104,6 +103,7 @@ MSG_CHOICES = (
 	('Event Changed','Event Changed'),
 	('Event Cancelled','Event Cancelled'),
 	('Event Reminder','Event Reminder'),
+	('Event Feedback','Event Feedback'),
 )
 
 class Msg(models.Model):
@@ -116,5 +116,27 @@ class Msg(models.Model):
 	
 	def __unicode__(self):
 		return str(self.sender) + " to" + str(self.recipient) + " re: " + str(self.subject)
+
+ATTENDANCE_CHOICES = (
+	('Yes', 'Yes'),
+	('No','No'),
+	('Unknown','Unknown'),
+)
+
+class Rating(models.Model):
+	player = models.ForeignKey(User, related_name = "Player")
+	rater = models.ForeignKey(User, related_name = "Rater")
+	# Ratings without Event are self-ratings during profile creation
+	event = models.ForeignKey(Event, blank = True, null = True)
+	sport = models.ForeignKey(Sport)
+	datetime = models.DateTimeField('DateTime Created')
+	attended = models.CharField(max_length=200, choices=ATTENDANCE_CHOICES)
+	rating = models.IntegerField (blank = True, null = True, validators=[
+            MaxValueValidator(5),
+            MinValueValidator(1)
+        ])
+
+	def __unicode__(self):
+		return str(self.player) + " @ " + str(self.sport.name) + " by " + str(self.rater)
 
 

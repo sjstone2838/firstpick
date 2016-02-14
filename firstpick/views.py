@@ -103,7 +103,7 @@ def save_profile(request):
 		userProfile.home_lng = request.POST['home_lng']
 		userProfile.save()
 		status = "Existing profile saved"
-		# delete all sports associted with UP, then add them back later
+		# delete all sports associted with UserProfile, then add them back later
 		userProfile.sports.through.objects.all().delete()
 	
 	except:
@@ -127,23 +127,33 @@ def save_profile(request):
 		stars = float(request.POST["sport_profiles[" + str(i) + "][stars]"])
 
 		try: 
+			#Adjust UserProfile
 			sp = SportProfile.objects.get(user = user, sport = sport)
-			# adjust rating_avg by adding one new rating
-			new_avg = (sp.rating_avg * sp.rating_count + stars) / (sp.rating_count + 1)
 			sp.radius = radius
 			sp.active = "Yes"
-			sp.rating_avg = new_avg
-			sp.rating_count += 1
 			sp.save()
+
+			#Adjust user's sport-specific self-rating
+			self_rating = Rating.objects.get(player = user, rater = user, sport = sport)
+			self_rating.rating = stars
+			self_rating.datetime = datetime.datetime.now()
+			self_rating.save()
+
 		except:
 			SportProfile.objects.create(
 				user = user, 
 				sport = sport,
 				radius = radius,
-				rating_avg = stars,
-				rating_count = 1,
 			)
-
+			Rating.objects.create(
+				player = user,
+				rater = user,
+				event = None,
+				sport = sport,
+				datetime = datetime.datetime.now(),
+				attended = "Yes",
+				rating = stars,
+			)
 	return JsonResponse({'status': status})	
 
 def new_event(request):
@@ -223,19 +233,24 @@ def create_event(request):
 		duration = int(request.POST['duration']),
 	)
 
-	# FIND ALL USERS WHO MEET CRITERIA
-	# first filter Sport Profiles
-	sps = SportProfile.objects.filter(
+	#  raw profiles = Sport Profiles active for sport
+	raw_profiles = SportProfile.objects.filter(
 		active = "Yes",
 		sport = e.sport,
-		rating_avg__gte = e.rating_min,
-		rating_avg__lte = e.rating_max,
 	)
+
+	# next, filter Sport Profiles meeting rating criteria
+	filtered_profiles = []
+	for profile in raw_profiles:
+		rating = Rating.objects.filter(player = profile.user, sport = e.sport).aggregate(Avg('rating'))['rating__avg']
+		print str(profile.user.username) + " avg score for " + str(e.sport.name) + ": " + str(rating)
+		if rating >= e.rating_min and rating <= e.rating_max:
+			filtered_profiles.append(profile)
 
 	# then filter user / userprofiles based on gender and proximity
 	invitees = []
-	for sp in sps:
-		ptInvitee = sp.user
+	for profile in filtered_profiles:
+		ptInvitee = profile.user
 		ptInviteeProfile = UserProfile.objects.get(user = ptInvitee)
 		# Don't invite the organizer
 		if e.organizer == ptInvitee:
@@ -249,7 +264,7 @@ def create_event(request):
 		home_loc = (ptInviteeProfile.home_lat, ptInviteeProfile.home_lng)
 		event_loc = (e.lat, e.lng)
 		dist = (vincenty(home_loc, event_loc).miles)
-		if dist > sp.radius:
+		if dist > profile.radius:
 			continue
 		invitees.append(ptInvitee)
 	
@@ -286,6 +301,7 @@ def save_event(request):
 	try: 
 		user, userProfile = get_user_perms(request)
 		e = Event.objects.get(pk = request.POST['eventpk'])
+		print request.POST
 		if e.organizer == user: 
 			e.name = request.POST['name']
 			e.sport = Sport.objects.get(name = request.POST['sport'])
@@ -299,9 +315,8 @@ def save_event(request):
 			e.players_needed = int(request.POST['players_needed'])
 			e.status = "upcoming"
 			e.start = extract_datetime(request)
-			e.duration = int(request.POST['duration']),
+			e.duration = int(request.POST['duration'])
 			e.save()
-
 			for invitee in e.invitees.all():
 				subject = "Firstpick: " + e.organizer.first_name + " " + e.organizer.last_name + " changed your upcoming " + e.sport.name.lower() + " game"
 				email_data = {
@@ -360,7 +375,7 @@ def rsvp(request):
 
 	if check_user_is_invitee(event,user) or check_user_is_player(event,user):
 		user = User.objects.get(pk = request.GET['userpk'])
-		event = Event.objects.get(pk = request.GET['eventpk'])
+		event.duration = str(int(event.duration / 60)) + ":" + str(event.duration % 60)	
 	elif event.organizer == user:
 		error_msg = "You appear to be the organizer of this event. If you would like to change the event, please use the 'Change event' button on your home screen"
 	else:
@@ -450,3 +465,68 @@ def messages(request):
 		'user': user,
 		'messages': messages,
 	})
+
+def render_rating(request):
+	user = event = status = error_msg = {}
+	try: 
+		event = Event.objects.get(pk = int(request.GET['eventpk']))
+		user = User.objects.get(pk = request.GET['userpk'])
+		if event.status != "completed":
+			status = "failed"
+			error_msg = "That event does not appear to be complete"
+		elif user != event.organizer and event.players.filter(pk = user.pk).count() != 1:
+			status = "failed"
+			error_msg = "You do not appear to have participated in this game"
+		elif Rating.objects.filter(rater = user, event = event).count() != 0:
+			status = "failed"
+			error_msg = "You've already provided feedback for this game"
+		else:
+			# if user is organizer, participants = players
+			if event.organizer == user:
+				event.participants = event.players.all()
+			# if user is a plyer, participants  = (player - user) + organizer
+			else:
+				event.participants = list(chain(event.players.exclude(pk = user.pk), User.objects.filter(pk = event.organizer.pk)))
+	except:
+		error_msg = "Something went wrong [UNABLE TO LOCATE USER OR EVENT]"
+	return render_to_response('firstpick/rating.html', {
+		'user': user,
+		'event': event,
+		'error_msg': error_msg
+	})
+
+def handle_rating(request):
+	user = event = status = error_msg = {}
+	try: 
+		event = Event.objects.get(pk = request.POST['query[eventpk]'])
+		user =  User.objects.get(pk = request.POST['query[userpk]'])
+		
+		if event.status != "completed":
+			status = "failed"
+			error_msg = "That event does not appear to be complete"
+		elif user != event.organizer and event.players.filter(pk = user.pk).count() != 1:
+			status = "failed"
+			error_msg = "You do not appear to have participated in this game"
+		elif Rating.objects.filter(rater = user, event = event).count() != 0:
+			status = "failed"
+			error_msg = "You've already provided feedback for this game"
+		else:
+			for participant in json.loads(request.POST['participants']):
+				star_count = int(participant['stars'])
+				if star_count == 0:
+					star_count = None
+				Rating.objects.create(
+					event = event,
+					sport = event.sport,
+					player = User.objects.get(pk = participant['pk']),
+					rater = user,
+					datetime = datetime.datetime.now(),
+					attended = participant['attendance'],
+					rating = star_count,
+				)
+			status = "success"
+	except:
+		status = "failed"
+		error_msg = "Unable to locate game and/or user"
+	return JsonResponse({'status': status, 'error_msg': error_msg})
+

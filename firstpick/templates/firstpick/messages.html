@@ -8,9 +8,9 @@
 
 {% for msg in messages %}
 <div class = "msg_header clickable">
-	<p> <strong> From: {{msg.sender}} </strong></p>
-	<p> Sent: {{msg.datetime}} </p>
-	<p> Subject: {{msg.subject}} </p>
+	<p class = "msg_header_line"> <strong> From: {{msg.sender}} </strong></p>
+	<p class = "msg_header_line"> Sent: {{msg.datetime}} </p>
+	<p class = "msg_header_line"> Subject: {{msg.subject}} </p>
 	<div class = "msg_body hide"> {{msg.body | safe | escape }} </div>
 </div>
 {% empty %}
