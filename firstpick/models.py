@@ -4,6 +4,7 @@ from allauth.account.models import EmailAddress
 from allauth.socialaccount.models import SocialAccount
 import hashlib
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db.models import Avg
 
  
 class Sport(models.Model):
@@ -23,11 +24,13 @@ class UserProfile(models.Model):
 		choices=GENDER_CHOICES,
 		default='Male'
 	)
+	address = models.CharField(max_length = 500, blank = True, null = True)
 	home_lat = models.FloatField(blank = True)
 	home_lng = models.FloatField(blank = True)
 	events_accepted = models.IntegerField (default = 0)
 	events_attended = models.IntegerField (default = 0)
 	login_count = models.IntegerField (default = 0)
+	#is sport field necessary or redundant consider SportProfiles
 	sports = models.ManyToManyField(Sport, default = None)
 
  	# for adding Facebook profile pic to UserProfile
@@ -61,6 +64,22 @@ class SportProfile(models.Model):
 	sport = models.ForeignKey(Sport)
 	radius = models.IntegerField (default = 1)
 	active = models.CharField(max_length=100, choices=ACTIVE_CHOICES, default = "Yes")
+	
+	@property
+	def avg_rating(self):
+		# https://docs.python.org/3/library/functions.html#property
+		ratings = Rating.objects.filter(player = self.user, sport = self.sport)
+		return ratings.aggregate(Avg('rating'))['rating__avg']
+
+	@property
+	def avg_attendance(self):
+		# Exclude ratings where attendance is "Unknown"
+		attended_yes = Rating.objects.filter(player = self.user, sport = self.sport, attended = "Yes").count()
+		attended_yes_and_no = Rating.objects.filter(player = self.user, sport = self.sport).exclude(attended = "Unknown").count()
+		if attended_yes_and_no != 0:
+			return 100 * float(attended_yes) / float(attended_yes_and_no)
+		else:
+			return "N/A"
 
 GENDER_PREFERENCES = (
 	('No gender preference','No gender preference'),

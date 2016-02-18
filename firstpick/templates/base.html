@@ -15,20 +15,20 @@
 		<div class = "row">
 			<div class = "col-xs-12 col-sm-offset-4 col-sm-4">
 				<div class="row" style = "padding: 10px;">
-					<div class=" btn-group col-xs-3" style = "padding: 0px; margin: 0px;">
-						<div type="button" class="navbar_btn dropdown-toggle clickable" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-						     <span class="glyphicon glyphicon-cog"></span>
-						</div>
-						<ul class="dropdown-menu">
-						    <li style = "text-align: left;"> <a href = "#"> {{user.first_name}} {{user.last_name}} </a> </li>
-						    <li style = "text-align: left;"><a href = "/firstpick/profile_settings/"> My Profile </a></li>
-						    <li style = "text-align: left;"><a href = "/accounts/logout/"> Logout </a></li>
-						</ul>
-					</div>
 					<div class="col-xs-9" style = "padding: 0px; margin: 0px;">
 							<div class = "col-xs-4" style = ""> <a class = "navbar_btn" href = "/firstpick/"> <span class="glyphicon glyphicon-home"></span> </a></div>
 							<div class = "col-xs-4" style = ""> <a class = "navbar_btn" href = "/firstpick/new_event"> <span class="glyphicon glyphicon-plus"></span> </a></div>
 							<div class = "col-xs-4" style = ""> <a class = "navbar_btn" href = "/firstpick/messages/"> <span class="glyphicon glyphicon-envelope"></span> </a></div>
+					</div>
+					<div class=" btn-group col-xs-3" style = "padding: 0px; margin: 0px;">
+						<div type="button" class="navbar_btn dropdown-toggle clickable" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						     <span class="glyphicon glyphicon-cog"></span>
+						</div>
+						<ul class="dropdown-menu pull-right">
+						    <li style = "text-align: left;"> <a href = "#"> {{user.first_name}} {{user.last_name}} </a> </li>
+						    <li style = "text-align: left;"><a href = "/firstpick/profile_settings/"> My Profile </a></li>
+						    <li style = "text-align: left;"><a href = "/accounts/logout/"> Logout </a></li>
+						</ul>
 					</div>
 				</div>
 			    {% block content %}

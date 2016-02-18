@@ -69,16 +69,18 @@ def update_event_status(self):
 			event.status = 'completed'
 			event.save()
 	
-			# SEND RATING REQUEST EMAIL TO PARTICIPANTS
-			participants = list(chain(User.objects.filter(pk = event.organizer.pk), event.players.all()))
-			for participant in participants:
-				sender = User.objects.get(username = "FirstpickAdmin")
-				subject = "Firstpick: Feedback on your " + event.sport.name.lower() + " game"
-				email_data = {
-					'rater' : participant,
-					'e' : event,
-				}
-				create_and_send_mail(sender,participant,subject,email_data,'firstpick/emails/feedback.html','Event Reminder')
+			players = event.players.all()
+			if players.count() != 0:
+				# SEND RATING REQUEST EMAIL TO PARTICIPANTS
+				participants = list(chain(User.objects.filter(pk = event.organizer.pk), players))
+				for participant in participants:
+					sender = User.objects.get(username = "FirstpickAdmin")
+					subject = "Firstpick: Feedback on your " + event.sport.name.lower() + " game"
+					email_data = {
+						'rater' : participant,
+						'e' : event,
+					}
+					create_and_send_mail(sender,participant,subject,email_data,'firstpick/emails/feedback.html','Event Reminder')
 
 
 

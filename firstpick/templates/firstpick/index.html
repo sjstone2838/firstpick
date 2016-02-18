@@ -6,36 +6,52 @@
 <script src="{% static 'js/firstpick/index.js' %}"></script>
 
     
-<div class="container-fluid">
-	 <div class="row">
-		<div class="col-xs-12 col-md-12">
+ <div class="row">
+	<div class="col-xs-12 col-md-12">
+	
+	<div>	
+		<div class = "events_header clickable"> 
+			My Upcoming Events ({{upcoming_events_count}})
+		</div>
+		<div class = "events_list">
 		{% if upcoming_events %}
 			 {% for event in upcoming_events %}
 				 <div class = "event_box clickable"> 
-				 	<h4> {{event.sport.name}} @ {{event.location_name}} </h4>
-				 	<p> {{event.name}} <strong> {{event.start}} </strong> </p>
+				 	<h4 style = "text-align: left;"> {{event.sport.name}} @ {{event.location_name}} </h4>
+				 	<p><strong> {{event.start|date:"M d, Y"}} at {{event.start|time:"g:i A"}} </strong></p>
+				 	<p> Organized by {{event.organizer.first_name}} {{event.organizer.last_name}} </p>
+				 	<p> Description: {{event.name}}</strong>
 				 	<p>{{event.relation|safe}} </p>
+				 	<p> {{event.test}}</p>
 				 	<div class = "event_details hide row">
-				 		<div class = "col-xs-6">
-					 		<p class = "center"> Invitees </p>
+					 		<p class = "event_details_header"> Invitees </p>
 					 		<ol>
-					 		{% for invitee in event.invitees.all %}
-					 			<li> {{invitee.first_name}} {{invitee.last_name}}</li>
+					 		{% for sportprofile in event.invitee_sportprofiles %}
+					 			<li> 
+					 				{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
+					 				<p style = "font-style:italic;"> 
+					 					{{sportprofile.avg_attendance|floatformat:0}}% attendance |
+					 					{{sportprofile.avg_rating|floatformat:1}} stars
+					 				</p>
+					 			</li>
 					 		{% empty%}
-					 			<li> No pending invites </li>
+					 			<p> No pending invites </p>
 					 		{% endfor %}
 					 		</ol>
-				 		</div>
-				 		<div class = "col-xs-6">
-					 		<p class = "center"> Players </p>
+					 		<p class = "event_details_header"> Players </p>
 					 		<ol>
-					 		{% for player in event.players.all %}
-					 			<li> {{player.first_name}} {{player.last_name}}</li>
+					 		{% for sportprofile in event.player_sportprofiles %}
+					 			<li> 
+					 			{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
+					 			<p style = "font-style:italic;">
+					 				{{sportprofile.avg_attendance|floatformat:0}}% attendance | 
+					 				{{sportprofile.avg_rating|floatformat:1}} stars
+					 			</p>
+					 			</li>
 					 		{% empty%}
-					 			<li> No players yet </li>
+					 			<p> No players yet </p>
 					 		{% endfor %}
 					 		</ol>
-					 	</div>
 			 		</div>
 				</div>
 			 {% endfor %}
@@ -43,6 +59,58 @@
 			<p> You do not have any upcoming events </p>
 		{% endif %}
 		</div>
+	</div>
+
+	{% for sportProfile in sportProfiles %}
+	<div>	
+		<div class = "events_header clickable"> 
+			Recommended {{sportProfile.sport.name}} games ({{sportProfile.event_count}})
+		</div>
+		<div class = "events_list hide"> 
+		{% for event in sportProfile.events %}
+			 <div class = "event_box clickable"> 
+			 	<h4 style = "text-align: left;"> {{event.sport.name}} @ {{event.location_name}} </h4>
+			 	<p><strong> {{event.start|date:"M d, Y"}} at {{event.start|time:"g:i A"}} </strong></p>
+			 	<p> Organized by {{event.organizer.first_name}} {{event.organizer.last_name}} </p>
+			 	<p> Description: {{event.name}}</strong>
+			 	<p>{{event.relation|safe}} </p>
+			 	<p> {{event.test}}</p>
+			 	<div class = "event_details hide row">
+				 		<p class = "event_details_header"> Invitees </p>
+				 		<ol>
+				 		{% for sportprofile in event.invitee_sportprofiles %}
+				 			<li> 
+				 				{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
+				 				<p style = "font-style:italic;"> 
+				 					{{sportprofile.avg_attendance|floatformat:0}}% attendance |
+				 					{{sportprofile.avg_rating|floatformat:1}} stars
+				 				</p>
+				 			</li>
+				 		{% empty%}
+				 			<p> No pending invites </p>
+				 		{% endfor %}
+				 		</ol>
+				 		<p class = "event_details_header"> Players </p>
+				 		<ol>
+				 		{% for sportprofile in event.player_sportprofiles %}
+				 			<li> 
+				 			{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
+				 			<p style = "font-style:italic;">
+				 				{{sportprofile.avg_attendance|floatformat:0}}% attendance | 
+				 				{{sportprofile.avg_rating|floatformat:1}} stars
+				 			</p>
+				 			</li>
+				 		{% empty%}
+				 			<p> No players yet </p>
+				 		{% endfor %}
+				 		</ol>
+		 		</div>
+			</div>
+		 {% endfor %}
+		</div>
+	</div>
+	{% endfor %}
+	
 	</div>
 </div>
 

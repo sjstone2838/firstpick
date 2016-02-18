@@ -22,9 +22,9 @@ $(document).ready(function(){
 	// VERIFY ALL FIELDS FILLED IN BEFORE SHOWING NEXT PAGE
 	$(".settings_next").click(function(){
 		n = parseInt($(this).attr("id").split("-")[1]);
-		if (n == 0 && ($("#first_name").val() == "" || $("#last_name").val() == "" || $("#email").val() == "" || $("#gender").val() == "")) {
+		if (n == 0 && ($("#first_name").val() == "" || $("#last_name").val() == "" || $("#email").val() == "" || $("#gender").val() == null)) {
 			$("#settings_error-" + n).removeClass("hide");
-		} else if (n == 1 && ($("#home_lat").html() == "None" || $("#home_lat").html() == "None")){
+		} else if (n == 1 && ($("#home_lat").val() == "None" || $("#home_lat").val() == "None")){
 			$("#settings_error-" + n).removeClass("hide");
 		} else if (n == 2 && $("#sport_selection").find('input:checked').length == 0){
 			$("#settings_error-" + n).removeClass("hide");
@@ -115,8 +115,9 @@ $(document).ready(function(){
 		        	'last_name': $("#last_name").val(),
 		        	'email': $("#email").val(),
 		        	'gender': $("#gender").val(),
-		        	'home_lat': $("#home_lat").html(),
-		        	'home_lng': $("#home_lng").html(),
+		        	'address': $("#pac-input").val(),
+		        	'home_lat': $("#home_lat").val(),
+		        	'home_lng': $("#home_lng").val(),
 		        	'sport_profiles': sport_profiles,
 		        	'sport_count': sports.length,
 		        },

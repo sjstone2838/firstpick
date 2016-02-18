@@ -40,12 +40,109 @@
 
     <div class = "settings_page" id = 'settings_page-1'>
       <h3> Where do you live? </h3>
-      <div class = "hide" id = "home_lat">None</div>
-      <div class = "hide" id = "home_lng">None</div>
+      
+      {% if userProfile %}
+      <input class = "hide" id = "home_lat" value = "{{userProfile.home_lat}}">
+      <input class = "hide" id = "home_lng" value = "{{userProfile.home_lng}}">
+      {% else %}
+      <input class = "hide" id = "home_lat" value = "None">
+      <input class = "hide" id = "home_lng" value = "None">
+      {% endif %}
+
       <div class = "settings_map">
+      	
+      	{% if userProfile %}
+      	<input id="pac-input" class="settings_input" type="text" value = "{{userProfile.address}}" style = "margin-left: 20px;">
+      	{% else %}
       	<input id="pac-input" class="settings_input" type="text" placeholder="Start typing your address here..." style = "margin-left: 20px;">
+        {% endif %}
+
         <div id="map"></div>
-        <script>
+        
+        {% if userProfile %}
+          
+	      <script>	
+          var pos = {lat: parseFloat($("#home_lat").val()), lng: parseFloat($("#home_lng").val())};
+          function initMap() {
+
+            var map = new google.maps.Map(document.getElementById('map'), {
+              center: pos,
+              zoom: 12,
+              mapTypeControl:false,  
+            });
+
+            var marker = new google.maps.Marker({
+                  map: map,
+                  position: pos,
+                  draggable: false,
+                });
+
+            // Create the search box and link it to the UI element.
+            var input = document.getElementById('pac-input');
+            var searchBox = new google.maps.places.SearchBox(input);
+            //map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+            // Bias the SearchBox results towards current map's viewport.
+            map.addListener('bounds_changed', function() {
+              searchBox.setBounds(map.getBounds());
+            });
+
+            var markers = [];
+            // Listen for the event fired when the user selects a prediction and retrieve
+            // more details for that place.
+            searchBox.addListener('places_changed', function() {
+              var places = searchBox.getPlaces();
+
+              if (places.length == 0) {
+                return;
+              }
+
+              // Clear out the old markers.
+              markers.forEach(function(marker) {
+                marker.setMap(null);
+              });
+              markers = [];
+
+              // For each place, get the icon, name and location.
+              var bounds = new google.maps.LatLngBounds();
+              places.forEach(function(place) {
+                var icon = {
+                  url: place.icon,
+                  size: new google.maps.Size(71, 71),
+                  origin: new google.maps.Point(0, 0),
+                  anchor: new google.maps.Point(17, 34),
+                  scaledSize: new google.maps.Size(25, 25)
+                };
+
+                // Create a marker for each place.
+                markers.push(new google.maps.Marker({
+                  map: map,
+                  icon: icon,
+                  title: place.name,
+                  position: place.geometry.location,
+                  draggable:false,
+                }));
+                $("#home_lat").val(place.geometry.location.lat());
+                $("#home_lng").val(place.geometry.location.lng());
+
+                if (place.geometry.viewport) {
+                  // Only geocodes have viewport.
+                  bounds.union(place.geometry.viewport);
+                } else {
+                  bounds.extend(place.geometry.location);
+                }
+              });
+
+              //console.log(places.length);
+              map.fitBounds(bounds);
+              //var pt = new google.maps.LatLng(lat, lng);
+              //map.setCenter(pt);
+              map.setZoom(12);
+            });
+          }
+        </script>
+        {% else %}
+          <script>
 
           // Note: This example requires that you consent to location sharing when
           // prompted by your browser. If you see the error "The Geolocation service
@@ -141,11 +238,11 @@
                   icon: icon,
                   title: place.name,
                   position: place.geometry.location,
-                  draggable:true,
+                  draggable:false,
                 }));
 
-                $("#home_lat").text(place.geometry.location.lat());
-                $("#home_lng").text(place.geometry.location.lng());
+                $("#home_lat").val(place.geometry.location.lat());
+                $("#home_lng").val(place.geometry.location.lng());
 
                 if (place.geometry.viewport) {
                   // Only geocodes have viewport.
@@ -163,24 +260,8 @@
             });
 
           }
-        </script>
-        <!--COULD NOT GET THIS TO WORK 
-        {% if userProfile %}
-          <input class = "" id = "userProfileLat" value = "{{userProfile.home_lat}}">
-          <input class = "" id = "userProfileLng" value = "{{userProfile.home_lng}}">
-	      <script>	
-          var pos = {lat: int($("#userProfileLat").val()), lng: int($("#userProfileLng").val()});
-          function initMap() {
-
-            var map = new google.maps.Map(document.getElementById('map2'), {
-              center: pos,
-              zoom: 12,
-              mapTypeControl:false,  
-            });
-          }
-        </script>
-	    {% endif %}
-	    -->
+          </script>
+	   {% endif %}
         <script async defer src="https://maps.googleapis.com/maps/api/js?key={{googlekey}}&libraries=places&callback=initMap"></script>
       </div>
       <div class = "settings_error hide" id = "settings_error-1"> Please choose an address </div>
@@ -190,12 +271,22 @@
       </div>
     </div>
 
-    <div class = "settings_page hide" id = 'settings_page-2'>
+    <div class = "settings_page hide " id = 'settings_page-2'>
       <h3> What sports do you play? </h3>
       <div id="sport_selection">
-      {% for sport in sports %}
-          <label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label>
-      {% endfor %}
+	      
+      {% if userProfile %}
+      	   {% for sport in sports_checked %}
+	          <label class = "sport_choice clickable"><input type="checkbox" checked value="{{sport}}"> {{sport}}</label>
+	       {% endfor %}
+	       {% for sport in sports_unchecked %}
+	          <label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label>
+	      {% endfor %}
+      {% else %}
+      		{% for sport in sports_all %}
+	          <label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label>
+	        {% endfor %}
+	  {% endif %}
       </div>
       <div class = "settings_error hide" id = "settings_error-2"> Please select at least one sport </div>
       <div class = "settings_btns">

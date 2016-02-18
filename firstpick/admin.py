@@ -8,7 +8,7 @@ from .models import *
 from django.core import urlresolvers
 
 class UserProfileAdmin(admin.ModelAdmin):
-	list_display =('user','id','gender','home_lat','home_lng','events_accepted','events_attended','login_count')
+	list_display =('user','id','gender','address','home_lat','home_lng','events_accepted','events_attended','login_count')
 	filter_horizontal = ('sports',)
 
 class SportAdmin(admin.ModelAdmin):

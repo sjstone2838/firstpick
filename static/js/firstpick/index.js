@@ -8,6 +8,14 @@ $(document).ready(function(){
 			details.addClass("hide");
 		}
 	});
-	
+
+	$(".events_header" ).click(function(){
+		details = $(this).parent().children(".events_list");
+		if (details.hasClass("hide")){
+			details.removeClass("hide");
+		} else {
+			details.addClass("hide");
+		}
+	});
 
 });

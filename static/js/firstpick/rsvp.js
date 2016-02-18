@@ -3,7 +3,6 @@ $(document).ready(function(){
 	$(".rsvp").click(function(){
 		var vars = {}
 		var rsvp = $(this).attr('id');
-		console.log(rsvp);
 		
 		// http://jquery-howto.blogspot.com/2009/09/get-url-parameters-values-with-jquery.html
 	    var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');

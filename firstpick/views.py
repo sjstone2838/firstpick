@@ -55,36 +55,83 @@ def index(request):
 		
 		upcoming_events = list(chain(upcoming_events_organizer, upcoming_events_invitee, upcoming_events_player))
 		upcoming_events.sort(key=lambda r: r.start)
+		upcoming_events_count = len(upcoming_events)
+		
 		for e in upcoming_events:
+			#APPEND AVG RATING & ATTENDANCE
+			e.player_sportprofiles = []
+			e.invitee_sportprofiles = []
+			for player in e.players.all():
+				e.player_sportprofiles.append(SportProfile.objects.get(user = player, sport = e.sport))
+			for invitee in e.invitees.all():
+				e.invitee_sportprofiles.append(SportProfile.objects.get(user = invitee, sport = e.sport))
+		
 			if e.organizer == user:
 				e.relation = "You're the organizer: <a href ='/firstpick/edit_event?eventpk=" + str(e.pk) +"'> Make changes </a>"
 			elif e.players.filter(pk = user.pk).count() == 1:
 				e.relation = "You're playing: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Change </a>"
 			else: 
 				e.relation = "Invite pending: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Respond </a>"
-		
+
+		# Get all sports that user plays
+		sportProfiles = SportProfile.objects.filter(user = user, active = "Yes")
+
+		excluded_gender = "Female Only"
+		if userProfile.gender == "Female":
+			excluded_gender = "Male Only"
+
+		# for each sport user plays, get all events that match profile
+		for sportProfile in sportProfiles:
+			raw_events = Event.objects.filter(
+				sport = sportProfile.sport, 
+				players_needed__gt = 0, 
+				status = "upcoming",
+				rating_min__lte = sportProfile.avg_rating,
+				rating_max__gte = sportProfile.avg_rating,
+			).exclude(
+				gender = excluded_gender,
+			).exclude(
+				players = user,
+			)
+			location_filtered_events = []
+			for event in raw_events:
+				# CALC VINCENTY DISTANCE IN MILES OF POTENTIAL INVITEE AND EVENT
+				home_loc = (userProfile.home_lat, userProfile.home_lng)
+				event_loc = (event.lat, event.lng)
+				dist = (vincenty(home_loc, event_loc).miles)
+				if dist < sportProfile.radius:
+					location_filtered_events.append(event)
+
+			sportProfile.events = location_filtered_events
+			sportProfile.event_count = len(location_filtered_events)
+
 		return render_to_response('firstpick/index.html', {
 			'user': user,
 			'googlekey': settings.GOOGLE_API_KEY,
 			'upcoming_events': upcoming_events,
+			'upcoming_events_count': upcoming_events_count,
+			'sportProfiles': sportProfiles,
 		})
 	except:
 		return redirect('/firstpick/profile_settings', request = request)
 	
 
 def profile_settings(request):
+	user = userProfile = sports_checked = sports_unchecked = {}
 	try:
 		user, userProfile = get_user_perms(request)
-		#userProfile.gender = SocialAccount.objects.get(user = user).extra_data['gender']
+		sports_checked = userProfile.sports.all()
+		sports_unchecked = Sport.objects.exclude(id__in=sports_checked)
 	except:
    		user = request.user
-   		userProfile = {}
 
 	return render_to_response('firstpick/profile_settings.html', {
 		'user': user,
 		'userProfile': userProfile,
 		'googlekey': settings.GOOGLE_API_KEY,
-		'sports': Sport.objects.all(),	
+		'sports_all': Sport.objects.all(),	
+		'sports_checked': sports_checked,	
+		'sports_unchecked': sports_unchecked,	
 	})
 
 def save_profile(request):
@@ -99,6 +146,7 @@ def save_profile(request):
 	try:
 		userProfile = UserProfile.objects.get(user = user)
 		userProfile.gender = request.POST['gender']
+		userProfile.address = request.POST['address']
 		userProfile.home_lat = request.POST['home_lat']
 		userProfile.home_lng = request.POST['home_lng']
 		userProfile.save()
@@ -110,6 +158,7 @@ def save_profile(request):
 		userProfile = UserProfile.objects.create(
 			user = user,
 			gender = request.POST['gender'],
+			address = request.POST['address'],
 			home_lat = request.POST['home_lat'],
 			home_lng = request.POST['home_lng'],
 		)
@@ -243,7 +292,7 @@ def create_event(request):
 	filtered_profiles = []
 	for profile in raw_profiles:
 		rating = Rating.objects.filter(player = profile.user, sport = e.sport).aggregate(Avg('rating'))['rating__avg']
-		print str(profile.user.username) + " avg score for " + str(e.sport.name) + ": " + str(rating)
+		#print str(profile.user.username) + " avg score for " + str(e.sport.name) + ": " + str(rating)
 		if rating >= e.rating_min and rating <= e.rating_max:
 			filtered_profiles.append(profile)
 
@@ -301,7 +350,6 @@ def save_event(request):
 	try: 
 		user, userProfile = get_user_perms(request)
 		e = Event.objects.get(pk = request.POST['eventpk'])
-		print request.POST
 		if e.organizer == user: 
 			e.name = request.POST['name']
 			e.sport = Sport.objects.get(name = request.POST['sport'])
