@@ -18,4 +18,5 @@ urlpatterns = patterns('firstpick.views',
 	(r'^messages/$','messages'),
 	(r'^render_rating/$','render_rating'),
 	(r'^handle_rating/$','handle_rating'),
+	(r'^reset_password/$','reset_password'),
 )

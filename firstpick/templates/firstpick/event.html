@@ -42,9 +42,9 @@
 		{% if event %}  <script> $("#sport").val("{{event.sport}}"); </script> {% endif %}
 
 		{% if event %} 
-			<input class = "new_event_input" id = "name" value = "{{event.name}}"> 
+			<input class = "new_event_input" id = "notes" value = "{{event.notes}}"> 
 		{% else %}
-			<input class = "new_event_input" id = "name" placeholder = "Short description, i.e. 'Casual 3-on-3 game'"> 
+			<input class = "new_event_input" id = "notes" placeholder = "Game notes, i.e. 'turf field'"> 
 		{% endif %}
 
 		<div class = "row">

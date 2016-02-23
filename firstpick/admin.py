@@ -15,7 +15,7 @@ class SportAdmin(admin.ModelAdmin):
 	list_display =('name',)
 
 class EventAdmin(admin.ModelAdmin):
-	list_display =('id','organizer','name','sport','start','location_name','address','lat','lng','gender','rating_min','rating_max','players_needed','status')
+	list_display =('id','organizer','notes','sport','start','location_name','address','lat','lng','gender','rating_min','rating_max','players_needed','status')
 	list_filter = ('sport', 'organizer')
 	filter_horizontal = ('players','invitees')
 

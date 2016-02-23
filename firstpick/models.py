@@ -96,7 +96,7 @@ EVENT_STATUS = (
 
 class Event(models.Model):
 	organizer = models.ForeignKey(User)
-	name = models.CharField(max_length = 500)
+	notes = models.CharField(max_length = 2000, blank = True, null = True)
 	sport = models.ForeignKey(Sport)
 	start = models.DateTimeField('Start time')
 	duration = models.IntegerField(default = 60)
@@ -113,7 +113,7 @@ class Event(models.Model):
 	players = models.ManyToManyField(User, default = None, related_name = "Players")
 	
 	def __unicode__(self):
-		return str(self.name)
+		return str(self.sport.name) + " @ " + str(self.location_name)
 
 MSG_CHOICES = (
 	('New Event', 'New Event'),
@@ -123,6 +123,7 @@ MSG_CHOICES = (
 	('Event Cancelled','Event Cancelled'),
 	('Event Reminder','Event Reminder'),
 	('Event Feedback','Event Feedback'),
+	('Reset Password','Reset Password'),
 )
 
 class Msg(models.Model):

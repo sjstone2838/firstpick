@@ -4,6 +4,7 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'styles.css' %}" >
 <script src="{% static 'js/firstpick/index.js' %}"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{googlekey}}"></script>
 
     
  <div class="row">
@@ -16,14 +17,44 @@
 		<div class = "events_list">
 		{% if upcoming_events %}
 			 {% for event in upcoming_events %}
-				 <div class = "event_box clickable"> 
-				 	<h4 style = "text-align: left;"> {{event.sport.name}} @ {{event.location_name}} </h4>
-				 	<p><strong> {{event.start|date:"M d, Y"}} at {{event.start|time:"g:i A"}} </strong></p>
-				 	<p> Organized by {{event.organizer.first_name}} {{event.organizer.last_name}} </p>
-				 	<p> Description: {{event.name}}</strong>
-				 	<p>{{event.relation|safe}} </p>
-				 	<p> {{event.test}}</p>
-				 	<div class = "event_details hide row">
+				 <div class = "event_box"> 
+				 	<div class = "event_header clickable">
+					 	<p><strong> {{event.sport.name}} @ {{event.location_name}} </strong></p>
+					 	<p><strong> {{event.start|date:"M d, Y"}} at {{event.start|time:"g:i A"}} </strong></p>
+					 	<p> 
+					 		{% if event.organizer != user %}
+					 		Organized by {{event.organizer.first_name}} {{event.organizer.last_name}} 
+					 		{% else %}
+					 		Organized by you
+					 		{% endif %}
+					 	</p>
+					</div>
+				 	<div class = "event_details hide">
+					 	<p>{{event.relation|safe}} </p>
+					 	{% if event.notes %} <p> Notes: {{event.notes}}</p> {% endif %}
+					 	<p> Available spots: 
+					 		{% if event.players_needed == 0 %} none {% else %} {{event.players_needed}} {% endif %}
+					 	</p>
+					 	{% if event.rating_min == event.rating_max %}
+					 		<p> Skill Level: {{event.rating_min | floatformat:0 }} star{{event.rating_min | pluralize }} </p>
+					 	{% else %}
+					 		<p> Skill Level: {{event.rating_min | floatformat:0 }}-{{event.rating_max | floatformat:0}} stars </p>
+					 	{% endif %}
+				 		<p class = "event_details_header"> Players </p>
+				 		<ol>
+				 		{% for sportprofile in event.player_sportprofiles %}
+				 			<li> 
+				 			{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
+				 			<p style = "font-style:italic;">
+				 				{{sportprofile.avg_attendance|floatformat:0}}% attendance | 
+				 				{{sportprofile.avg_rating|floatformat:1}} stars
+				 			</p>
+				 			</li>
+				 		{% empty%}
+				 			<p> No players yet </p>
+				 		{% endfor %}
+				 		</ol>
+				 		{% if event.players_needed != 0 %}
 					 		<p class = "event_details_header"> Invitees </p>
 					 		<ol>
 					 		{% for sportprofile in event.invitee_sportprofiles %}
@@ -38,20 +69,9 @@
 					 			<p> No pending invites </p>
 					 		{% endfor %}
 					 		</ol>
-					 		<p class = "event_details_header"> Players </p>
-					 		<ol>
-					 		{% for sportprofile in event.player_sportprofiles %}
-					 			<li> 
-					 			{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
-					 			<p style = "font-style:italic;">
-					 				{{sportprofile.avg_attendance|floatformat:0}}% attendance | 
-					 				{{sportprofile.avg_rating|floatformat:1}} stars
-					 			</p>
-					 			</li>
-					 		{% empty%}
-					 			<p> No players yet </p>
-					 		{% endfor %}
-					 		</ol>
+					 	{% endif %}
+					 	<div class = "btn btn-default togglemap" id="togglemap_{{event.pk}}_{{event.lat}}_{{event.lng}}">Show map</div>
+					 	<div class="homepage_map" id="map_{{event.pk}}"></div>
 			 		</div>
 				</div>
 			 {% endfor %}
@@ -68,42 +88,45 @@
 		</div>
 		<div class = "events_list hide"> 
 		{% for event in sportProfile.events %}
-			 <div class = "event_box clickable"> 
-			 	<h4 style = "text-align: left;"> {{event.sport.name}} @ {{event.location_name}} </h4>
-			 	<p><strong> {{event.start|date:"M d, Y"}} at {{event.start|time:"g:i A"}} </strong></p>
-			 	<p> Organized by {{event.organizer.first_name}} {{event.organizer.last_name}} </p>
-			 	<p> Description: {{event.name}}</strong>
-			 	<p>{{event.relation|safe}} </p>
-			 	<p> {{event.test}}</p>
-			 	<div class = "event_details hide row">
-				 		<p class = "event_details_header"> Invitees </p>
-				 		<ol>
-				 		{% for sportprofile in event.invitee_sportprofiles %}
-				 			<li> 
-				 				{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
-				 				<p style = "font-style:italic;"> 
-				 					{{sportprofile.avg_attendance|floatformat:0}}% attendance |
-				 					{{sportprofile.avg_rating|floatformat:1}} stars
-				 				</p>
-				 			</li>
-				 		{% empty%}
-				 			<p> No pending invites </p>
-				 		{% endfor %}
-				 		</ol>
+			 <div class = "event_box"> 
+			 	<div class = "event_header clickable">
+				 	<p><strong> {{event.sport.name}} @ {{event.location_name}} </strong></p>
+				 	<p><strong> {{event.start|date:"M d, Y"}} at {{event.start|time:"g:i A"}} </strong></p>
+				 	<p> Organized by {{event.organizer.first_name}} {{event.organizer.last_name}} </p>
+				</div>
+			 	<div class = "event_details hide">
+				 		<p> <a href="/firstpick/rsvp/?userpk={{user.pk}}&eventpk={{event.pk}}&newuser=true"> RSVP to this event</a></p>
+				 		{% if event.notes %} <p> Notes: {{event.notes}}</p> {% endif %}
+					 	<p> Available spots: 
+					 		{% if event.players_needed == 0 %} none {% else %} {{event.players_needed}} {% endif %}
+					 	</p>
+					 	{% if event.rating_min == event.rating_max %}
+					 		<p> Skill Level: {{event.rating_min | floatformat:0 }} star{{event.rating_min | pluralize }} </p>
+					 	{% else %}
+					 		<p> Skill Level: {{event.rating_min | floatformat:0 }}-{{event.rating_max | floatformat:0}} stars </p>
+					 	{% endif %}
 				 		<p class = "event_details_header"> Players </p>
 				 		<ol>
-				 		{% for sportprofile in event.player_sportprofiles %}
+				 		{% for player in event.players.all %}
 				 			<li> 
-				 			{{sportprofile.user.first_name}} {{sportprofile.user.last_name}}
-				 			<p style = "font-style:italic;">
-				 				{{sportprofile.avg_attendance|floatformat:0}}% attendance | 
-				 				{{sportprofile.avg_rating|floatformat:1}} stars
-				 			</p>
+				 			{{player.first_name}} {{player.last_name}}
 				 			</li>
 				 		{% empty%}
 				 			<p> No players yet </p>
 				 		{% endfor %}
 				 		</ol>
+				 		<p class = "event_details_header"> Invitees </p>
+				 		<ol>
+				 		{% for invitee in event.invitees.all %}
+				 			<li> 
+				 				{{invitee.first_name}} {{invitee.last_name}}
+				 			</li>
+				 		{% empty%}
+				 			<p> No pending invites </p>
+				 		{% endfor %}
+				 		</ol>
+				 		<div class = "btn btn-default togglemap" id="togglemap_{{event.pk}}_{{event.lat}}_{{event.lng}}">Show map</div>
+					 	<div class="homepage_map" id="map_{{event.pk}}"></div>
 		 		</div>
 			</div>
 		 {% endfor %}

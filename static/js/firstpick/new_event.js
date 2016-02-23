@@ -16,10 +16,11 @@ $(document).ready(function(){
 	
 
 	function checkEventComplete(){
-		if ($("#name").val() == ""){
-			$("#submit_error").removeClass("hide").html("Please name your game");
-			return false;
-		} else if ($("#sport").val() == null){
+		// if ($("#name").val() == ""){
+		//	$("#submit_error").removeClass("hide").html("Please name your game");
+		//	return false;
+		//} else 
+		if ($("#sport").val() == null){
 			$("#submit_error").removeClass("hide").html("Please choose a sport");
 			return false;
 		} else if ($("#date").val()  == ""){
@@ -58,7 +59,7 @@ $(document).ready(function(){
 		$("#invites_sent_msg").addClass("hide");
 		if (checkEventComplete()) {
 			var data = {
-				'name': $("#name").val(),
+				'notes': $("#notes").val(),
 	        	'sport': $("#sport").val(),
 	        	'date': $("#date").val(),
 	        	'time': $("#time").val(),

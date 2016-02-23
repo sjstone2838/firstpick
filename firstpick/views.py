@@ -92,7 +92,10 @@ def index(request):
 				gender = excluded_gender,
 			).exclude(
 				players = user,
+			).exclude(
+				organizer = user,
 			)
+
 			location_filtered_events = []
 			for event in raw_events:
 				# CALC VINCENTY DISTANCE IN MILES OF POTENTIAL INVITEE AND EVENT
@@ -115,7 +118,7 @@ def index(request):
 	except:
 		return redirect('/firstpick/profile_settings', request = request)
 	
-
+@login_required(login_url = '/accounts/login/')
 def profile_settings(request):
 	user = userProfile = sports_checked = sports_unchecked = {}
 	try:
@@ -134,6 +137,7 @@ def profile_settings(request):
 		'sports_unchecked': sports_unchecked,	
 	})
 
+@login_required(login_url = '/accounts/login/')
 def save_profile(request):
 	user = request.user
 	userProfile = {}
@@ -205,6 +209,7 @@ def save_profile(request):
 			)
 	return JsonResponse({'status': status})	
 
+@login_required(login_url = '/accounts/login/')
 def new_event(request):
 	user, userProfile = get_user_perms(request)
 
@@ -215,6 +220,7 @@ def new_event(request):
 		'googlekey': settings.GOOGLE_API_KEY,
 	})
 
+@login_required(login_url = '/accounts/login/')
 def edit_event(request):
 	error_msg = None
 	user = userProfile = event = {}
@@ -262,12 +268,14 @@ def extract_datetime(request):
 		hour = 0
 	return datetime.datetime(year,month,day,hour,minute,0)
 
+@login_required(login_url = '/accounts/login/')
 def create_event(request):
 	# CREATE EVENT
+	print request.POST
 	user, userProfile = get_user_perms(request)
 	e = Event.objects.create(
 		organizer = user,
-		name = request.POST['name'],
+		notes = request.POST['notes'],
 		sport = Sport.objects.get(name = request.POST['sport']),
 		location_name = request.POST['location_name'],
 		address = request.POST['address'],
@@ -292,7 +300,6 @@ def create_event(request):
 	filtered_profiles = []
 	for profile in raw_profiles:
 		rating = Rating.objects.filter(player = profile.user, sport = e.sport).aggregate(Avg('rating'))['rating__avg']
-		#print str(profile.user.username) + " avg score for " + str(e.sport.name) + ": " + str(rating)
 		if rating >= e.rating_min and rating <= e.rating_max:
 			filtered_profiles.append(profile)
 
@@ -344,6 +351,7 @@ def create_and_send_mail(sender,recipient,subject,email_data,email_template,msg_
 		msg_type = msg_type,
 	)
 
+@login_required(login_url = '/accounts/login/')
 def save_event(request):
 	# TODO: do not allow organizer to reduce players required below players enrolled
 	# TODO: do not allow organizer to crop skill range when invites sent to players outside range
@@ -351,7 +359,7 @@ def save_event(request):
 		user, userProfile = get_user_perms(request)
 		e = Event.objects.get(pk = request.POST['eventpk'])
 		if e.organizer == user: 
-			e.name = request.POST['name']
+			e.notes = request.POST['notes']
 			e.sport = Sport.objects.get(name = request.POST['sport'])
 			e.location_name = request.POST['location_name']
 			e.address = request.POST['address']
@@ -379,6 +387,7 @@ def save_event(request):
 		status = "failed"
 	return JsonResponse({'status': status })
 
+@login_required(login_url = '/accounts/login/')
 def cancel_event(request):
 	try:
 		user, userProfile = get_user_perms(request)
@@ -412,8 +421,9 @@ def check_user_is_player(event,user):
 	else:
 		return False
 
+@login_required(login_url = '/accounts/login/')
 def rsvp(request):
-	user = event = error_msg = {}
+	user = event = error_msg = newuser = {}
 	try: 
 		user = User.objects.get(pk = request.GET['userpk'])
 		event = Event.objects.get(pk = request.GET['eventpk'])
@@ -421,7 +431,16 @@ def rsvp(request):
 		error_msg = "Something went wrong [UNABLE TO LOCATE USER OR EVENT]"
 		return render_to_response('firstpick/rsvp.html', {'error_msg': error_msg})
 
-	if check_user_is_invitee(event,user) or check_user_is_player(event,user):
+	try:
+		#returns true if user is not an invitee, hence a "new user"
+		newuser = request.GET['newuser']
+	except:
+		pass
+
+	if event.players_needed == 0:
+		error_msg = "Sorry - this game has filled up. We'll let you know when a similar game is available"
+	# Render for new user (who may be uninvited) or invitee or player
+	elif newuser or check_user_is_invitee(event,user) or check_user_is_player(event,user):
 		user = User.objects.get(pk = request.GET['userpk'])
 		event.duration = str(int(event.duration / 60)) + ":" + str(event.duration % 60)	
 	elif event.organizer == user:
@@ -451,6 +470,7 @@ def check_user_event_perms(event,user):
 	except:
 		status = "Something went wrong - please try again"
 
+@login_required(login_url = '/accounts/login/')
 def handle_rsvp(request):
 	eventpk = request.POST['vars[eventpk]']
 	userpk = request.POST['vars[userpk]']
@@ -505,6 +525,7 @@ def handle_rsvp(request):
 			status = "Got it [ERROR]"
 	return JsonResponse({'status': status })
 
+@login_required(login_url = '/accounts/login/')
 def messages(request):
 	user, userProfile = get_user_perms(request)
 	messages = Msg.objects.filter(recipient = user).order_by('-datetime')
@@ -577,4 +598,35 @@ def handle_rating(request):
 		status = "failed"
 		error_msg = "Unable to locate game and/or user"
 	return JsonResponse({'status': status, 'error_msg': error_msg})
+
+def reset_password(request):
+	try:
+		email = request.POST['email']
+		user = User.objects.get(email = email)
+		def pw_generator(size=10, chars=string.ascii_uppercase + string.ascii_lowercase + string.digits):
+		 	return ''.join(random.choice(chars) for _ in range(size))
+	 	new_pw = pw_generator()
+	 	user.set_password(new_pw)
+	 	user.save()
+	 	subject = "Firstpick: password changed"
+		email_data = {
+			'user' : user,
+			'new_pw': new_pw,
+		}
+		sender = User.objects.get(username="FirstpickAdmin")
+		create_and_send_mail(sender,user,subject,email_data,'firstpick/emails/reset_password.html','Reset Password')
+	 	return JsonResponse({'status': "success"})
+	except:
+		return JsonResponse({'status': "failed"})
+
+
+
+
+
+
+
+
+
+
+
 
