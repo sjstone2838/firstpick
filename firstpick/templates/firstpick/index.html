@@ -21,16 +21,15 @@
 				 	<div class = "event_header clickable">
 					 	<p><strong> {{event.sport.name}} @ {{event.location_name}} </strong></p>
 					 	<p><strong> {{event.start|date:"M d, Y"}} at {{event.start|time:"g:i A"}} </strong></p>
+					 	<p>{{event.relation|safe}} </p>
+
+					</div>
+				 	<div class = "event_details hide">
 					 	<p> 
 					 		{% if event.organizer != user %}
 					 		Organized by {{event.organizer.first_name}} {{event.organizer.last_name}} 
-					 		{% else %}
-					 		Organized by you
 					 		{% endif %}
 					 	</p>
-					</div>
-				 	<div class = "event_details hide">
-					 	<p>{{event.relation|safe}} </p>
 					 	{% if event.notes %} <p> Notes: {{event.notes}}</p> {% endif %}
 					 	<p> Available spots: 
 					 		{% if event.players_needed == 0 %} none {% else %} {{event.players_needed}} {% endif %}

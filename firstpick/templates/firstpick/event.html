@@ -63,7 +63,7 @@
 				{% if event %}
 				<input class = "new_event_input" type="text" id="time" value = "{{event.time}}">
 				{% else %}
-				<input class = "new_event_input" type="text" id="time" placeholder = "Start time">
+				<input class = "new_event_input" type="text" id="time" placeholder = "Time">
 				{% endif %}
 			 	<script> 
 			 		//http://jonthornton.github.io/jquery-timepicker/
@@ -72,18 +72,18 @@
 			</div>
 			<div class = "col-xs-5" style = "margin-left: -15px;">
 				<select class = "new_event_input" type="text" id="duration">
-					<option disabled selected > Game length </option>
-					<option value = '30'> 0:30 (duration)</option>
-					<option value = '45'> 0:45 (duration)</option>
-					<option value = '60'> 1:00 (duration)</option>
-					<option value = '75'> 1:15 (duration)</option>
-					<option value = '90'> 1:30 (duration)</option>
-					<option value = '105'> 1:45 (duration)</option>
-					<option value = '120'> 2:00 (duration)</option>
-					<option value = '135'> 2:15 (duration)</option>
-					<option value = '150'> 2:30 (duration)</option>
-					<option value = '165'> 2:45 (duration)</option>
-					<option value = '180'> 3:00 (duration)</option>
+					<option disabled selected > Duration </option>
+					<option value = '30'> 0:30 </option>
+					<option value = '45'> 0:45 </option>
+					<option value = '60'> 1:00 </option>
+					<option value = '75'> 1:15 </option>
+					<option value = '90'> 1:30 </option>
+					<option value = '105'> 1:45 </option>
+					<option value = '120'> 2:00 </option>
+					<option value = '135'> 2:15 </option>
+					<option value = '150'> 2:30 </option>
+					<option value = '165'> 2:45 </option>
+					<option value = '180'> 3:00 </option>
 				</select>
 				{% if event %}
 				<script> $("#duration").val("{{event.duration}}"); </script>
@@ -248,10 +248,10 @@
 		{% endif %}
 		
 		<div class = "row" style = "vertical-align: center;">
-			<div class = "col-xs-3">
-				<input type="text" id="rating_range" readonly style="overflow: hidden; border: none; margin-left: 10px;">
+			<div class = "col-xs-4">
+				<input type="text" id="rating_range" readonly style="overflow: hidden; border: none; margin-left: 10px; color:black; background-color; black;">
 			</div>
-			<div class = "col-xs-9" style = "padding: 5px 50px 0px 0px;">
+			<div class = "col-xs-8" style = "padding: 5px 50px 0px 0px;">
 				<div id="slider-range"></div>
 			</div>
 		</div>

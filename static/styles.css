@@ -3,6 +3,12 @@ html, body {
 	height: 100%;
 	margin: 0;
 	padding: 0;	
+	background-color: #404040;
+	color: #00ff99;
+}
+
+a{
+	color: #E8E8E8;
 }
 
 .div{
@@ -11,6 +17,7 @@ html, body {
 
 h1, h2, h3, h4, h5, h6 {
 	text-align: center;
+	color: #00ff99;
 }
 
 ul, ol {
@@ -76,9 +83,11 @@ ul, ol {
 	/*border: 1px solid black;*/
 	overflow: hidden;
 	margin: 0% 3% 0% 3%;
+	color: black;
 }
 
 .settings_btns{
+	bottom: 5%;
 	text-align: center;
 }
 
@@ -92,17 +101,13 @@ ul, ol {
 	vertical-align: center;
 }
 
-.sport_dist, .stars{
+.sport_dist, .star_box{
 	cursor: pointer; 
     cursor: hand;
     background-color: lightgrey;
     margin: 5px;
     padding: 5px;
-}
-
-.rating_star{
-	cursor: pointer; 
-    cursor: hand;
+    color: black;
 }
 
 .settings_error{
@@ -117,22 +122,28 @@ ul, ol {
 }
 
 .event_box{
-	background-color: lightgrey;
 	margin: 10px 0px 10px 0px;
 	padding: 10px 10px 1px 10px;
 	line-height: 10px;
 }
 
 .event_details{
-	background-color: white;
+	border: 2px #00ff99 solid;
 	margin: 0px 0px 10px 0px;
 	padding: 10px;
 	line-height: 14px;
 }
 
 .event_details_header{
-	border-bottom: 1px solid black;
+	border-bottom: 1px solid #00ff99;
 	font-weight: bold;
+}
+
+.btn{
+	background-color: #00ff99;
+	color: black;
+	font-weight: bold;
+	border: none;
 }
 
 .floatright{
@@ -146,7 +157,7 @@ ul, ol {
 }
 
 .msg_header{
-	background-color: lightgrey;
+	border: 1px solid #00ff99;
 	margin: 10px;
 	padding: 10px;
 
@@ -157,7 +168,8 @@ ul, ol {
 }
 
 .msg_body{
-	background-color: white;
+	background-color: #E8E8E8;
+	color: black;
 	padding: 10px;
 	cursor: text;
 }
@@ -168,7 +180,7 @@ ul, ol {
 	display: inline-block;
 	width: 100%;
 	font-size: 18pt;
-	color: #3366cc;
+	color: #00ff99;;
 }
 
 .center{
@@ -209,16 +221,33 @@ ul, ol {
 }
 
 .events_header{
-	background-color: #3366cc;
-	color: white;
+	background-color: #B8B8B8 ;
+	color: black;
+	font-weight: bold;
 	margin: 5px 0px 5px 0px;
 	padding:5px;
+}
+
+.glyphicon-cog{
+	color: #B8B8B8;
 }
 
 .togglemap{
 	border-radius: 0px !important;
 	margin-bottom: 10px;
 	width: 100%;
+}
+
+#reset_password{
+	margin: 10px;
+}
+
+#create_box{
+	color:black;
+}
+
+input, button{
+	color:black;
 }
 
 

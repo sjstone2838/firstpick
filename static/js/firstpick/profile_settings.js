@@ -19,11 +19,17 @@ $(document).ready(function(){
 		$("#settings_page-" + n).removeClass("hide");
 	});	
 
+	$("#reset_password").click(function(){
+		$("#reset_password_box").toggle();
+	})
+
 	// VERIFY ALL FIELDS FILLED IN BEFORE SHOWING NEXT PAGE
 	$(".settings_next").click(function(){
 		n = parseInt($(this).attr("id").split("-")[1]);
 		if (n == 0 && ($("#first_name").val() == "" || $("#last_name").val() == "" || $("#email").val() == "" || $("#gender").val() == null)) {
 			$("#settings_error-" + n).removeClass("hide");
+	 	} else if ($("#new_pw").val() != $("#new_pw_confirm").val()){
+	 		$("#password_error").removeClass("hide");
 		} else if (n == 1 && ($("#home_lat").val() == "None" || $("#home_lat").val() == "None")){
 			$("#settings_error-" + n).removeClass("hide");
 		} else if (n == 2 && $("#sport_selection").find('input:checked').length == 0){
@@ -35,65 +41,67 @@ $(document).ready(function(){
 				$("#settings_page-1").css("max-height","100%");
 			}
 			$("#settings_error-" + n).addClass("hide");
+			$("#password_error").addClass("hide");
 			showNext (n);
 		}
 	});
 
 	// show dist and stars for selected sports
 	$("#next-2").click(function(){
+		$(".dist_data").addClass("hide");
+		$(".stars").addClass("hide");
 		sports = $("#sport_selection").find('input:checked').map(function () {
   			return this.value;
 		}).get();
-
-		$("#sport_radius, #self_rating").html("");
+		
 		$.each(sports, function(i, sport){
-			x = "<p>" +  sport +"<span class = 'sport_dist'><span class = 'adjust_dist decrement_dist' id = '" +sport+"_down'>&#9660</span> <span id = '" +sport+"_dist'>" + RADIUS_DEFAULT + "</span> <span id = '" +sport+"_miles'> miles </span><span class = 'adjust_dist increment_dist'id = '" +sport+"_up'>&#9650</span></span></p>"
-			$("#sport_radius").append(x);
-			y = "<p>" + sport + "<span class = 'stars " + sport + "_star'> <span class = 'star' id = '"+ sport + "_star_1'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_2'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_3'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_4'> &#9734 </span> <span class = 'star' id = '"+ sport + "_star_5'> &#9734 </span> </span></p>"
-			$("#self_rating").append(y);
+			$("#" + sport + "_dist_data").removeClass("hide");
+			$("#" + sport + "_stars").removeClass("hide");
 		});
-
-		// adjust distance
-		$(".adjust_dist").click(function(){
-			var sport = $(this).attr("id").split("_")[0];
-			var radius = parseInt($("#" + sport + "_dist").html());
-			if ($(this).hasClass("increment_dist")){
-				radius += 1;
-			} else {
-				if (radius != 1){
-					radius -= 1;
-				}
-			}
-			$("#" + sport + "_dist").html(radius);
-			if (radius == 1){
-				$("#" + sport + "_miles").html("mile");
-				$("#" + sport + "_down").addClass("hide");
-			} else {
-				$("#" + sport + "_miles").html("miles");
-				$("#" + sport + "_down").removeClass("hide");
-			}
-		});
-
-		// adjust stars
-		$(".star").click(function(){
-			sport = $(this).attr("id").split("_")[0];
-			n = $(this).attr("id").split("_")[2];
-			$("." + sport + "_star").children().each(function(){
-				$(this).html("&#9734").removeClass("active");
-				i = $(this).attr("id").split("_")[2];
-				if (i <= n){
-					$(this).html("&#9733").addClass("active");
-				}
-			});
-		})
 	});
+
+	// adjust distance
+	$(".adjust_dist").click(function(){
+		var sport = $(this).attr("id").split("_")[0];
+		var radius = parseInt($("#" + sport + "_dist").html());
+		if ($(this).hasClass("increment_dist")){
+			radius += 1;
+		} else {
+			if (radius != 1){
+				radius -= 1;
+			}
+		}
+		$("#" + sport + "_dist").html(radius);
+		if (radius == 1){
+			$("#" + sport + "_miles").html("mile");
+			$("#" + sport + "_down").addClass("hide");
+		} else {
+			$("#" + sport + "_miles").html("miles");
+			$("#" + sport + "_down").removeClass("hide");
+		}
+	});
+
+	// adjust stars
+	$(".star").click(function(){
+		sport = $(this).attr("id").split("_")[0];
+		n = $(this).attr("id").split("_")[2];
+		$("#" + sport + "_stars").find(".star").each(function(){
+			$(this).html("&#9734").removeClass("active");
+			i = $(this).attr("id").split("_")[2];
+			if (i <= n){
+				$(this).html("&#9733").addClass("active");
+			}
+		});
+	})
 	
 	// submit data
 	$("#submit").click(function(){
-		$("#refresh_wheel").removeClass("hide");
 		var ratings = 0;
+		
+		//TODO - GET ALL DIVS of class "star" where parent does not have class "hide", then verify at least one child has class "active"
+
 		$.each(sports, function(i, sport){
-			if( $("." + sport + "_star").children(".active").length == 0){
+			if( $("#" + sport + "_stars").find(".star.active").length == 0){
 				$("#settings_error-4").removeClass("hide");
 				ratings += 1;
 			}
@@ -104,9 +112,10 @@ $(document).ready(function(){
 				temp = {};
 				temp['sport'] = sport;
 				temp['radius'] = $("#" + sport + "_dist").html()
-				temp['stars'] = $("." + sport + "_star").children(".active").length;
+				temp['stars'] = $("#" + sport + "_stars").find(".active").length;
 				sport_profiles.push(temp);
 			});
+			$("#refresh_wheel").removeClass("hide");
 			$.ajax({
 		        type: 'POST',
 		        url: '/firstpick/save_profile/',
@@ -114,7 +123,10 @@ $(document).ready(function(){
 		        	'first_name': $("#first_name").val(),
 		        	'last_name': $("#last_name").val(),
 		        	'email': $("#email").val(),
+		        	'username': $("#username").val(),
 		        	'gender': $("#gender").val(),
+		        	'new_pw': $("#new_pw").val(),
+		        	'new_pw_confirm': $("#new_pw_confirm").val(),
 		        	'address': $("#pac-input").val(),
 		        	'home_lat': $("#home_lat").val(),
 		        	'home_lng': $("#home_lng").val(),
@@ -123,7 +135,14 @@ $(document).ready(function(){
 		        },
 		        success: function(response) {
 					$("#refresh_wheel").addClass("hide");
-	            	location.href = "/firstpick/";
+	            	console.log(response.status);
+	            	if (response.status == "Passwords do not match"){
+	            		$(".settings_page").addClass("hide");
+	            		$("#settings_page-0").removeClass("hide");
+	            		$("#password_error").removeClass("hide");
+	            	} else {
+	            		location.href = "/firstpick/";
+	            	}
 	        	}
 		    });
 	    }

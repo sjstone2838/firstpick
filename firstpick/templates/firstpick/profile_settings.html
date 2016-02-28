@@ -16,7 +16,9 @@
        <input class = 'settings_input' type='text' id = 'last_name' placeholder = "Last name"> 
        {% endif %}
 
+      <!--<input class = 'settings_input' type='text' id = 'username' value = '{{user.username}}'>-->
       <input class = 'settings_input' type='text' id = 'email' value = '{{user.email}}'> 
+      
 
       {% if userProfile %}
       <select class = 'settings_input' type='text' id = 'gender'>
@@ -31,7 +33,12 @@
             <option value="Female">Female</option>
       </select>
       {% endif %}
-
+      <a class = "clickable" id = "reset_password"> Reset password </a>
+	  <div style = "display: none;" id = "reset_password_box">
+	      <input class = 'settings_input' type='password' id = 'new_pw' placeholder = "New password"> 
+	      <input class = 'settings_input' type='password' id = 'new_pw_confirm' placeholder = "Confirm new password"> 
+	  </div>
+      <div class = "settings_error hide" id = "password_error"> Passwords do not match </div>
       <div class = "settings_error hide" id = "settings_error-0"> Please fill in all fields </div>
       <div class = "settings_btns">
         <div class = 'btn btn-info settings_next' id = 'next-0'> Next</div>
@@ -62,204 +69,204 @@
         {% if userProfile %}
           
 	      <script>	
-          var pos = {lat: parseFloat($("#home_lat").val()), lng: parseFloat($("#home_lng").val())};
-          function initMap() {
+	          var pos = {lat: parseFloat($("#home_lat").val()), lng: parseFloat($("#home_lng").val())};
+	          function initMap() {
 
-            var map = new google.maps.Map(document.getElementById('map'), {
-              center: pos,
-              zoom: 12,
-              mapTypeControl:false,  
-            });
+	            var map = new google.maps.Map(document.getElementById('map'), {
+	              center: pos,
+	              zoom: 12,
+	              mapTypeControl:false,  
+	            });
 
-            var marker = new google.maps.Marker({
-                  map: map,
-                  position: pos,
-                  draggable: false,
-                });
+	            var marker = new google.maps.Marker({
+	                  map: map,
+	                  position: pos,
+	                  draggable: false,
+	                });
 
-            // Create the search box and link it to the UI element.
-            var input = document.getElementById('pac-input');
-            var searchBox = new google.maps.places.SearchBox(input);
-            //map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+	            // Create the search box and link it to the UI element.
+	            var input = document.getElementById('pac-input');
+	            var searchBox = new google.maps.places.SearchBox(input);
+	            //map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
-            // Bias the SearchBox results towards current map's viewport.
-            map.addListener('bounds_changed', function() {
-              searchBox.setBounds(map.getBounds());
-            });
+	            // Bias the SearchBox results towards current map's viewport.
+	            map.addListener('bounds_changed', function() {
+	              searchBox.setBounds(map.getBounds());
+	            });
 
-            var markers = [];
-            // Listen for the event fired when the user selects a prediction and retrieve
-            // more details for that place.
-            searchBox.addListener('places_changed', function() {
-              var places = searchBox.getPlaces();
+	            var markers = [];
+	            // Listen for the event fired when the user selects a prediction and retrieve
+	            // more details for that place.
+	            searchBox.addListener('places_changed', function() {
+	              var places = searchBox.getPlaces();
 
-              if (places.length == 0) {
-                return;
-              }
+	              if (places.length == 0) {
+	                return;
+	              }
 
-              // Clear out the old markers.
-              markers.forEach(function(marker) {
-                marker.setMap(null);
-              });
-              markers = [];
+	              // Clear out the old markers.
+	              markers.forEach(function(marker) {
+	                marker.setMap(null);
+	              });
+	              markers = [];
 
-              // For each place, get the icon, name and location.
-              var bounds = new google.maps.LatLngBounds();
-              places.forEach(function(place) {
-                var icon = {
-                  url: place.icon,
-                  size: new google.maps.Size(71, 71),
-                  origin: new google.maps.Point(0, 0),
-                  anchor: new google.maps.Point(17, 34),
-                  scaledSize: new google.maps.Size(25, 25)
-                };
+	              // For each place, get the icon, name and location.
+	              var bounds = new google.maps.LatLngBounds();
+	              places.forEach(function(place) {
+	                var icon = {
+	                  url: place.icon,
+	                  size: new google.maps.Size(71, 71),
+	                  origin: new google.maps.Point(0, 0),
+	                  anchor: new google.maps.Point(17, 34),
+	                  scaledSize: new google.maps.Size(25, 25)
+	                };
 
-                // Create a marker for each place.
-                markers.push(new google.maps.Marker({
-                  map: map,
-                  icon: icon,
-                  title: place.name,
-                  position: place.geometry.location,
-                  draggable:false,
-                }));
-                $("#home_lat").val(place.geometry.location.lat());
-                $("#home_lng").val(place.geometry.location.lng());
+	                // Create a marker for each place.
+	                markers.push(new google.maps.Marker({
+	                  map: map,
+	                  icon: icon,
+	                  title: place.name,
+	                  position: place.geometry.location,
+	                  draggable:false,
+	                }));
+	                $("#home_lat").val(place.geometry.location.lat());
+	                $("#home_lng").val(place.geometry.location.lng());
 
-                if (place.geometry.viewport) {
-                  // Only geocodes have viewport.
-                  bounds.union(place.geometry.viewport);
-                } else {
-                  bounds.extend(place.geometry.location);
-                }
-              });
+	                if (place.geometry.viewport) {
+	                  // Only geocodes have viewport.
+	                  bounds.union(place.geometry.viewport);
+	                } else {
+	                  bounds.extend(place.geometry.location);
+	                }
+	              });
 
-              //console.log(places.length);
-              map.fitBounds(bounds);
-              //var pt = new google.maps.LatLng(lat, lng);
-              //map.setCenter(pt);
-              map.setZoom(12);
-            });
-          }
+	              //console.log(places.length);
+	              map.fitBounds(bounds);
+	              //var pt = new google.maps.LatLng(lat, lng);
+	              //map.setCenter(pt);
+	              map.setZoom(12);
+	            });
+	          }
         </script>
         {% else %}
           <script>
 
-          // Note: This example requires that you consent to location sharing when
-          // prompted by your browser. If you see the error "The Geolocation service
-          // failed.", it means you probably did not give permission for the browser to
-          // locate you.
+	          // Note: This example requires that you consent to location sharing when
+	          // prompted by your browser. If you see the error "The Geolocation service
+	          // failed.", it means you probably did not give permission for the browser to
+	          // locate you.
 
-          // Try HTML5 geolocation.
-          var pos = {lat: -34, lng: 150};
+	          // Try HTML5 geolocation.
+	          var pos = {lat: -34, lng: 150};
 
-          function initMap() {
-            var pos = {};
-            navigator.geolocation.getCurrentPosition(function(position) {
-              pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude
-              };
-            });
+	          function initMap() {
+	            var pos = {};
+	            navigator.geolocation.getCurrentPosition(function(position) {
+	              pos = {
+	                lat: position.coords.latitude,
+	                lng: position.coords.longitude
+	              };
+	            });
 
-            var map = new google.maps.Map(document.getElementById('map'), {
-              center: pos,
-              zoom: 12,
-              mapTypeControl:false,  
-            });
-           
+	            var map = new google.maps.Map(document.getElementById('map'), {
+	              center: pos,
+	              zoom: 12,
+	              mapTypeControl:false,  
+	            });
+	           
 
 
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function(position) {
-              pos = {
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-              };
-              //infoWindow.setPosition(pos);
-              //infoWindow.setContent('Location found.');
-              map.setCenter(pos);
-            }, function() {
-              var infoWindow = new google.maps.InfoWindow({map: map});
-              handleLocationError(true, infoWindow, map.getCenter());
-            });
-          } else {
-            // Browser doesn't support Geolocation
-            var infoWindow = new google.maps.InfoWindow({map: map});
-            handleLocationError(false, infoWindow, map.getCenter());
-          }
+	          if (navigator.geolocation) {
+	            navigator.geolocation.getCurrentPosition(function(position) {
+	              pos = {
+	                lat: position.coords.latitude,
+	                lng: position.coords.longitude,
+	              };
+	              //infoWindow.setPosition(pos);
+	              //infoWindow.setContent('Location found.');
+	              map.setCenter(pos);
+	            }, function() {
+	              var infoWindow = new google.maps.InfoWindow({map: map});
+	              handleLocationError(true, infoWindow, map.getCenter());
+	            });
+	          } else {
+	            // Browser doesn't support Geolocation
+	            var infoWindow = new google.maps.InfoWindow({map: map});
+	            handleLocationError(false, infoWindow, map.getCenter());
+	          }
 
-          function handleLocationError(browserHasGeolocation, infoWindow, pos) {
-            infoWindow.setPosition(pos);
-            infoWindow.setContent(browserHasGeolocation ?
-              'Error: The Geolocation service failed.' :
-              'Error: Your browser doesn\'t support geolocation.');
-          }
-          
-            // Create the search box and link it to the UI element.
-            var input = document.getElementById('pac-input');
-            var searchBox = new google.maps.places.SearchBox(input);
-            //map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+	          function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+	            infoWindow.setPosition(pos);
+	            infoWindow.setContent(browserHasGeolocation ?
+	              'Error: The Geolocation service failed.' :
+	              'Error: Your browser doesn\'t support geolocation.');
+	          }
+	          
+	            // Create the search box and link it to the UI element.
+	            var input = document.getElementById('pac-input');
+	            var searchBox = new google.maps.places.SearchBox(input);
+	            //map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
-            // Bias the SearchBox results towards current map's viewport.
-            map.addListener('bounds_changed', function() {
-              searchBox.setBounds(map.getBounds());
-            });
+	            // Bias the SearchBox results towards current map's viewport.
+	            map.addListener('bounds_changed', function() {
+	              searchBox.setBounds(map.getBounds());
+	            });
 
-            var markers = [];
-            // Listen for the event fired when the user selects a prediction and retrieve
-            // more details for that place.
-            searchBox.addListener('places_changed', function() {
-              var places = searchBox.getPlaces();
+	            var markers = [];
+	            // Listen for the event fired when the user selects a prediction and retrieve
+	            // more details for that place.
+	            searchBox.addListener('places_changed', function() {
+	              var places = searchBox.getPlaces();
 
-              if (places.length == 0) {
-                return;
-              }
+	              if (places.length == 0) {
+	                return;
+	              }
 
-              // Clear out the old markers.
-              markers.forEach(function(marker) {
-                marker.setMap(null);
-              });
-              markers = [];
+	              // Clear out the old markers.
+	              markers.forEach(function(marker) {
+	                marker.setMap(null);
+	              });
+	              markers = [];
 
-              // For each place, get the icon, name and location.
-              var bounds = new google.maps.LatLngBounds();
-              places.forEach(function(place) {
-                var icon = {
-                  url: place.icon,
-                  size: new google.maps.Size(71, 71),
-                  origin: new google.maps.Point(0, 0),
-                  anchor: new google.maps.Point(17, 34),
-                  scaledSize: new google.maps.Size(25, 25)
-                };
+	              // For each place, get the icon, name and location.
+	              var bounds = new google.maps.LatLngBounds();
+	              places.forEach(function(place) {
+	                var icon = {
+	                  url: place.icon,
+	                  size: new google.maps.Size(71, 71),
+	                  origin: new google.maps.Point(0, 0),
+	                  anchor: new google.maps.Point(17, 34),
+	                  scaledSize: new google.maps.Size(25, 25)
+	                };
 
-                // Create a marker for each place.
-                markers.push(new google.maps.Marker({
-                  map: map,
-                  icon: icon,
-                  title: place.name,
-                  position: place.geometry.location,
-                  draggable:false,
-                }));
+	                // Create a marker for each place.
+	                markers.push(new google.maps.Marker({
+	                  map: map,
+	                  icon: icon,
+	                  title: place.name,
+	                  position: place.geometry.location,
+	                  draggable:false,
+	                }));
 
-                $("#home_lat").val(place.geometry.location.lat());
-                $("#home_lng").val(place.geometry.location.lng());
+	                $("#home_lat").val(place.geometry.location.lat());
+	                $("#home_lng").val(place.geometry.location.lng());
 
-                if (place.geometry.viewport) {
-                  // Only geocodes have viewport.
-                  bounds.union(place.geometry.viewport);
-                } else {
-                  bounds.extend(place.geometry.location);
-                }
-              });
+	                if (place.geometry.viewport) {
+	                  // Only geocodes have viewport.
+	                  bounds.union(place.geometry.viewport);
+	                } else {
+	                  bounds.extend(place.geometry.location);
+	                }
+	              });
 
-              //console.log(places.length);
-              map.fitBounds(bounds);
-              //var pt = new google.maps.LatLng(lat, lng);
-              //map.setCenter(pt);
-              map.setZoom(12);
-            });
+	              //console.log(places.length);
+	              map.fitBounds(bounds);
+	              //var pt = new google.maps.LatLng(lat, lng);
+	              //map.setCenter(pt);
+	              map.setZoom(12);
+	            });
 
-          }
+	          }
           </script>
 	   {% endif %}
         <script async defer src="https://maps.googleapis.com/maps/api/js?key={{googlekey}}&libraries=places&callback=initMap"></script>
@@ -276,15 +283,15 @@
       <div id="sport_selection">
 	      
       {% if userProfile %}
-      	   {% for sport in sports_checked %}
-	          <label class = "sport_choice clickable"><input type="checkbox" checked value="{{sport}}"> {{sport}}</label>
+      	   {% for sportProfile in sports_checked %}
+	          <h4 style="text-align: left;"><label class = "sport_choice clickable"><input type="checkbox" checked value="{{sportProfile.sport.name}}"> {{sportProfile.sport.name}}</label></h4>
 	       {% endfor %}
 	       {% for sport in sports_unchecked %}
-	          <label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label>
+	          <h4 style="text-align: left;"><label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label></h4>
 	      {% endfor %}
       {% else %}
       		{% for sport in sports_all %}
-	          <label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label>
+	          <h4 style="text-align: left;"><label class = "sport_choice clickable"><input type="checkbox" value="{{sport}}"> {{sport}}</label></h4>
 	        {% endfor %}
 	  {% endif %}
       </div>
@@ -297,7 +304,21 @@
 
     <div class = "settings_page hide" id = 'settings_page-3'>
       <h3> How far will you travel to play?  </h3>
-      <div id="sport_radius"> </div>
+      <br>
+      <div id="sport_radius"> 
+      	{% for sport in sports_all %}
+      		<h4 style= "text-align: left; margin: 0px 0px 25px 10px;" class = "dist_data hide" id = "{{sport}}_dist_data">
+      			<span class = 'sport_dist'>
+      				<span class = 'adjust_dist decrement_dist' id = '{{sport}}_down'>&#9660</span> 
+      				<span id = '{{sport}}_dist'> 5 </span> 
+      				<span id = '{{sport}}_miles'> miles </span>
+      				<span class = 'adjust_dist increment_dist'id = '{{sport}}_up'>&#9650</span>
+      			</span>
+      			{{sport}}
+      		</h4>
+     	 {% endfor %}
+      </div>
+   
       <div class = "settings_error hide" id = "settings_error-3"> Please enter a distance for each sport </div>
       <div class = "settings_btns">
         <div class = 'btn btn-info settings_back' id = 'back-3'> Back </div>
@@ -307,7 +328,37 @@
 
     <div class = "settings_page hide" id = 'settings_page-4'>
       <h3> Please rate your skill at each sport  </h3>
-      <div id="self_rating"> </div>
+      <br>
+      <div id="self_rating"> 
+      	{% for sport in sports_all %}
+      		<h4 style= "text-align: left; margin: 0px 0px 25px 10px;" class = "hide stars" id = '{{sport}}_stars'> 
+      			<span class = 'star_box'> 
+      				<span class = 'star' id = '{{sport}}_star_1'> &#9734 </span> 
+      				<span class = 'star' id = '{{sport}}_star_2'> &#9734 </span> 
+      				<span class = 'star' id = '{{sport}}_star_3'> &#9734 </span> 
+      				<span class = 'star' id = '{{sport}}_star_4'> &#9734 </span> 
+      				<span class = 'star' id = '{{sport}}_star_5'> &#9734 </span> 
+      			</span>
+      			{{sport}}
+      		</h4>
+     	 {% endfor %}
+      </div>
+
+      {% for sportProfile in sports_checked %}
+		<script> 
+			$("#" + "{{sportProfile.sport}}" +"_dist").text("{{sportProfile.radius}}"); 
+			rating = $("#" + "{{sportProfile.sport}}" + "_stars");
+			rating.removeClass("hide");
+			rating.find(".star").each(function(){
+				$(this).html("&#9734").removeClass("active");
+				index = $(this).attr("id").split("_")[2];
+				if (index <= {{sportProfile.self_rating}}){
+					$(this).html("&#9733").addClass("active");
+				}
+			});
+		</script>
+  	{% endfor %}
+
       <div class = "settings_error hide" id = "settings_error-4"> Please rate yourself for each sport </div>
       <div class = "settings_btns">
         <div class = 'btn btn-info settings_back' id = 'back-4'> Back </div>

@@ -120,14 +120,20 @@ def index(request):
 	
 @login_required(login_url = '/accounts/login/')
 def profile_settings(request):
-	user = userProfile = sports_checked = sports_unchecked = {}
+	user = userProfile = sports_checked = sports_unchecked = sports_checked_ids = []
 	try:
 		user, userProfile = get_user_perms(request)
-		sports_checked = userProfile.sports.all()
-		sports_unchecked = Sport.objects.exclude(id__in=sports_checked)
+		sports_checked = SportProfile.objects.filter(user = user, active = "Yes")
+		for sportProfile in sports_checked:
+			sportProfile.self_rating = Rating.objects.get(player = user, rater = user, sport = sportProfile.sport).rating
+			sports_checked_ids.append(sportProfile.sport.pk)
+
+		sports_unchecked = Sport.objects.exclude(id__in=sports_checked_ids)
 	except:
    		user = request.user
-
+	
+	print "Checked" + str(sports_checked)
+	print "Unchecked" + str(sports_unchecked)
 	return render_to_response('firstpick/profile_settings.html', {
 		'user': user,
 		'userProfile': userProfile,
@@ -142,6 +148,7 @@ def save_profile(request):
 	user = request.user
 	userProfile = {}
 	status = ""
+
 	user.first_name = request.POST['first_name']
 	user.last_name = request.POST['last_name']
 	user.email = request.POST['email']
@@ -207,6 +214,22 @@ def save_profile(request):
 				attended = "Yes",
 				rating = stars,
 			)
+	# Handle password reset last, because it destroys other session data when 
+	# user is logged in again
+	if request.POST['new_pw'] != "" and request.POST['new_pw'] == request.POST['new_pw_confirm']:
+		new_pw = request.POST['new_pw']
+		user.set_password(new_pw)
+		user.save()
+		username = user.username
+  		logout(request)
+  		user = authenticate(username=username, password=new_pw) 
+  		if user is not None:
+  			login(request,user)
+	
+	if request.POST['new_pw'] != "" and request.POST['new_pw'] != request.POST['new_pw_confirm']:
+		status = "Passwords do not match"
+		return JsonResponse({'status': status})
+
 	return JsonResponse({'status': status})	
 
 @login_required(login_url = '/accounts/login/')
@@ -270,8 +293,6 @@ def extract_datetime(request):
 
 @login_required(login_url = '/accounts/login/')
 def create_event(request):
-	# CREATE EVENT
-	print request.POST
 	user, userProfile = get_user_perms(request)
 	e = Event.objects.create(
 		organizer = user,
