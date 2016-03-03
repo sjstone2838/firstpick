@@ -219,8 +219,8 @@ GOOGLE_API_KEY = 'AIzaSyAIcEnWVLbljifvbMB3RYjo9uSqRuM387w'
 EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'mail.privateemail.com'
 EMAIL_PORT = 25
-EMAIL_HOST_USER = 'invites@deepdive.us'
-EMAIL_HOST_PASSWORD = ']bebickheEF8]'
+EMAIL_HOST_USER = 'admin@firstpick.io'
+EMAIL_HOST_PASSWORD = 'yOgAx607ZciN'
 EMAIL_USE_TLS = False
 
 # CELERY
