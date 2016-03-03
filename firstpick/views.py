@@ -36,87 +36,87 @@ def get_user_perms(request):
 @login_required(login_url = '/accounts/login/')
 def index(request):
 	#if UserProfile exists
-	try:
-		user, userProfile = get_user_perms(request)
-		upcoming_events = {}
+	#try:
+	user, userProfile = get_user_perms(request)
+	upcoming_events = {}
 
-		upcoming_events_player = Event.objects.filter(
-			status = "upcoming", 
+	upcoming_events_player = Event.objects.filter(
+		status = "upcoming", 
+		players = user,
+	)
+	upcoming_events_invitee = Event.objects.filter(
+		status = "upcoming", 
+		invitees = user,
+	)
+	upcoming_events_organizer = Event.objects.filter(
+		status = "upcoming", 
+		organizer = user,
+	)
+	
+	upcoming_events = list(chain(upcoming_events_organizer, upcoming_events_invitee, upcoming_events_player))
+	upcoming_events.sort(key=lambda r: r.start)
+	upcoming_events_count = len(upcoming_events)
+	
+	for e in upcoming_events:
+		#APPEND AVG RATING & ATTENDANCE
+		e.player_sportprofiles = []
+		e.invitee_sportprofiles = []
+		for player in e.players.all():
+			e.player_sportprofiles.append(SportProfile.objects.get(user = player, sport = e.sport))
+		for invitee in e.invitees.all():
+			e.invitee_sportprofiles.append(SportProfile.objects.get(user = invitee, sport = e.sport))
+	
+		if e.organizer == user:
+			e.relation = "You're the organizer: <a href ='/firstpick/edit_event?eventpk=" + str(e.pk) +"'> Make changes </a>"
+		elif e.players.filter(pk = user.pk).count() == 1:
+			e.relation = "You're playing: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Change </a>"
+		else: 
+			e.relation = "Invite pending: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Respond </a>"
+
+	# Get all sports that user plays
+	sportProfiles = SportProfile.objects.filter(user = user, active = "Yes")
+
+	excluded_gender = "Female Only"
+	if userProfile.gender == "Female":
+		excluded_gender = "Male Only"
+
+	# for each sport user plays, get all events that match profile
+	for sportProfile in sportProfiles:
+		raw_events = Event.objects.filter(
+			sport = sportProfile.sport, 
+			players_needed__gt = 0, 
+			status = "upcoming",
+			rating_min__lte = sportProfile.avg_rating,
+			rating_max__gte = sportProfile.avg_rating,
+		).exclude(
+			gender = excluded_gender,
+		).exclude(
 			players = user,
-		)
-		upcoming_events_invitee = Event.objects.filter(
-			status = "upcoming", 
-			invitees = user,
-		)
-		upcoming_events_organizer = Event.objects.filter(
-			status = "upcoming", 
+		).exclude(
 			organizer = user,
 		)
-		
-		upcoming_events = list(chain(upcoming_events_organizer, upcoming_events_invitee, upcoming_events_player))
-		upcoming_events.sort(key=lambda r: r.start)
-		upcoming_events_count = len(upcoming_events)
-		
-		for e in upcoming_events:
-			#APPEND AVG RATING & ATTENDANCE
-			e.player_sportprofiles = []
-			e.invitee_sportprofiles = []
-			for player in e.players.all():
-				e.player_sportprofiles.append(SportProfile.objects.get(user = player, sport = e.sport))
-			for invitee in e.invitees.all():
-				e.invitee_sportprofiles.append(SportProfile.objects.get(user = invitee, sport = e.sport))
-		
-			if e.organizer == user:
-				e.relation = "You're the organizer: <a href ='/firstpick/edit_event?eventpk=" + str(e.pk) +"'> Make changes </a>"
-			elif e.players.filter(pk = user.pk).count() == 1:
-				e.relation = "You're playing: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Change </a>"
-			else: 
-				e.relation = "Invite pending: <a href= '/firstpick/rsvp/?userpk=" + str(user.pk) + "&eventpk="+ str(e.pk) +"'> Respond </a>"
 
-		# Get all sports that user plays
-		sportProfiles = SportProfile.objects.filter(user = user, active = "Yes")
+		location_filtered_events = []
+		for event in raw_events:
+			# CALC VINCENTY DISTANCE IN MILES OF POTENTIAL INVITEE AND EVENT
+			home_loc = (userProfile.home_lat, userProfile.home_lng)
+			event_loc = (event.lat, event.lng)
+			dist = (vincenty(home_loc, event_loc).miles)
+			if dist < sportProfile.radius:
+				location_filtered_events.append(event)
 
-		excluded_gender = "Female Only"
-		if userProfile.gender == "Female":
-			excluded_gender = "Male Only"
+		sportProfile.events = location_filtered_events
+		sportProfile.event_count = len(location_filtered_events)
 
-		# for each sport user plays, get all events that match profile
-		for sportProfile in sportProfiles:
-			raw_events = Event.objects.filter(
-				sport = sportProfile.sport, 
-				players_needed__gt = 0, 
-				status = "upcoming",
-				rating_min__lte = sportProfile.avg_rating,
-				rating_max__gte = sportProfile.avg_rating,
-			).exclude(
-				gender = excluded_gender,
-			).exclude(
-				players = user,
-			).exclude(
-				organizer = user,
-			)
-
-			location_filtered_events = []
-			for event in raw_events:
-				# CALC VINCENTY DISTANCE IN MILES OF POTENTIAL INVITEE AND EVENT
-				home_loc = (userProfile.home_lat, userProfile.home_lng)
-				event_loc = (event.lat, event.lng)
-				dist = (vincenty(home_loc, event_loc).miles)
-				if dist < sportProfile.radius:
-					location_filtered_events.append(event)
-
-			sportProfile.events = location_filtered_events
-			sportProfile.event_count = len(location_filtered_events)
-
-		return render_to_response('firstpick/index.html', {
-			'user': user,
-			'googlekey': settings.GOOGLE_API_KEY,
-			'upcoming_events': upcoming_events,
-			'upcoming_events_count': upcoming_events_count,
-			'sportProfiles': sportProfiles,
-		})
-	except:
-		return redirect('/firstpick/profile_settings', request = request)
+	return render_to_response('firstpick/index.html', {
+		'user': user,
+		'googlekey': settings.GOOGLE_API_KEY,
+		'upcoming_events': upcoming_events,
+		'upcoming_events_count': upcoming_events_count,
+		'sportProfiles': sportProfiles,
+	})
+	#except:
+	#	return redirect('/firstpick/profile_settings', request = request)
 	
 @login_required(login_url = '/accounts/login/')
 def profile_settings(request):
@@ -228,12 +228,11 @@ def save_profile(request):
 	
 	if request.POST['new_pw'] != "" and request.POST['new_pw'] != request.POST['new_pw_confirm']:
 		status = "Passwords do not match"
-		return JsonResponse({'status': status})
 
 	return JsonResponse({'status': status})	
 
 @login_required(login_url = '/accounts/login/')
-def new_event(request):
+def render_event(request):
 	user, userProfile = get_user_perms(request)
 
 	return render_to_response('firstpick/event.html', {

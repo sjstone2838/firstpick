@@ -110,7 +110,7 @@ $(document).ready(function(){
 		        	}
 			    });
 			} else {
-				data['eventpk'] = $("#eventpk").html();
+				data = {'eventpk': $("#eventpk").html()};
 				$.ajax({
 			        type: 'POST',
 			        url: '/firstpick/cancel_event/',

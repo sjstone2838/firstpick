@@ -98,8 +98,6 @@ $(document).ready(function(){
 	$("#submit").click(function(){
 		var ratings = 0;
 		
-		//TODO - GET ALL DIVS of class "star" where parent does not have class "hide", then verify at least one child has class "active"
-
 		$.each(sports, function(i, sport){
 			if( $("#" + sport + "_stars").find(".star.active").length == 0){
 				$("#settings_error-4").removeClass("hide");
@@ -135,7 +133,6 @@ $(document).ready(function(){
 		        },
 		        success: function(response) {
 					$("#refresh_wheel").addClass("hide");
-	            	console.log(response.status);
 	            	if (response.status == "Passwords do not match"){
 	            		$(".settings_page").addClass("hide");
 	            		$("#settings_page-0").removeClass("hide");
