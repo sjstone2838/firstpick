@@ -361,7 +361,7 @@ def create_event(request):
 
 def create_and_send_mail(sender,recipient,subject,email_data,email_template,msg_type):
 	body = render_to_string(email_template, email_data)
-	send_mail(subject, body, 'invites@deepdive.us ', [recipient.email], fail_silently=False, html_message = body)
+	send_mail(subject, body, settings.EMAIL_HOST_USER, [recipient.email], fail_silently=False, html_message = body)
 	Msg.objects.create(
 		sender  = sender, 
 		recipient = recipient, 
